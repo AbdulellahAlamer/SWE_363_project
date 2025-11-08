@@ -45,17 +45,8 @@ function App() {
 
   if (!authLayout) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-3xl rounded-[32px] border border-slate-100 bg-white shadow-2xl ring-1 ring-white/60 backdrop-blur p-10 space-y-6">
-          {/* <button
-            type="button"
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
-            onClick={() => goTo("/")}
-          >
-            ← Back to login
-          </button> */}
-          <ActivePage />
-        </div>
+      <div className="min-h-screen bg-slate-100">
+        <ActivePage />
       </div>
     );
   }
