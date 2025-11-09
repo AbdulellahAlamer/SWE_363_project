@@ -2,6 +2,7 @@ import { useState } from "react";
 import Button from "./components/Button.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
+import Events from "./components/Events.jsx";
 
 function App() {
   const [view, setView] = useState("login");
