@@ -99,7 +99,9 @@ export default function Events() {
               <p className="text-sm text-slate-500 mb-4">{ev.desc}</p>
 
               <div className="text-xs text-slate-500 mb-4">
-                <div className="uppercase tracking-wide text-[11px]">Hosted by</div>
+                <div className="uppercase tracking-wide text-[11px]">
+                  Hosted by
+                </div>
                 <div className="font-medium text-slate-800">{ev.host}</div>
               </div>
 
@@ -125,4 +127,3 @@ export default function Events() {
     </div>
   );
 }
-                

@@ -22,11 +22,13 @@ function AuthField({
   );
 }
 
-function RegisterPage({ onNavigate }) {
+function RegisterPage() {
   return (
     <div className="flex flex-col gap-8">
       <header className="space-y-2">
-        <h2 className="text-3xl font-bold text-slate-900">Join the community</h2>
+        <h2 className="text-3xl font-bold text-slate-900">
+          Join the community
+        </h2>
         <p className="text-base text-slate-500">
           Join KFUPM Clubs Hub to discover events and connect with peers.
         </p>
@@ -69,9 +71,7 @@ function RegisterPage({ onNavigate }) {
             type="checkbox"
             className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/60 focus:ring-offset-0"
           />
-          <span>
-            I agree to the platform terms and privacy policy.
-          </span>
+          <span>I agree to the platform terms and privacy policy.</span>
         </div>
 
         <Button type="submit" className="w-full justify-center text-base">
@@ -83,7 +83,7 @@ function RegisterPage({ onNavigate }) {
         Already have an account?{" "}
         <button
           type="button"
-          onClick={() => onNavigate("login")}
+          onClick={() => window.location.assign("/login")}
           className="font-semibold text-blue-600 hover:text-blue-700"
         >
           Login instead

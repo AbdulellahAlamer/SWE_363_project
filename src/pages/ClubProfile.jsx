@@ -2,11 +2,9 @@
 // after selecting a club from the dashboard or clubs list, this page shows detailed info about the club
 // each club has a name, descibtion, and list of events.
 // students can subscribe to clubs, and those subscripted clubs will show up on their dashboard.
-import React from "react";
-import React, { useState } from "react";
 // ...existing code...
 import React, { useState } from "react";
-import Button from "./Button.jsx";
+import Button from "../components/Button.jsx";
 
 const sampleEvents = [
   {
@@ -96,7 +94,9 @@ export default function ClubProfile({ club }) {
 
       {/* upcoming events header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-slate-900">Upcoming Events</h2>
+        <h2 className="text-lg font-semibold text-slate-900">
+          Upcoming Events
+        </h2>
         <a href="#" className="text-sm text-blue-600">
           View all
         </a>
@@ -117,11 +117,15 @@ export default function ClubProfile({ club }) {
               </span>
             </div>
 
-            <h3 className="text-md font-semibold text-slate-900 mb-2">{ev.title}</h3>
+            <h3 className="text-md font-semibold text-slate-900 mb-2">
+              {ev.title}
+            </h3>
             <p className="text-sm text-slate-500 mb-4">{ev.desc}</p>
 
             <div className="text-xs text-slate-500 mb-4">
-              <div className="uppercase tracking-wide text-[11px]">Hosted by</div>
+              <div className="uppercase tracking-wide text-[11px]">
+                Hosted by
+              </div>
               <div className="font-medium text-slate-800">{ev.host}</div>
             </div>
 
@@ -138,7 +142,9 @@ export default function ClubProfile({ club }) {
         ))}
 
         {upcoming.length === 0 && (
-          <p className="text-sm text-slate-500 col-span-full">No upcoming events.</p>
+          <p className="text-sm text-slate-500 col-span-full">
+            No upcoming events.
+          </p>
         )}
       </div>
     </div>
