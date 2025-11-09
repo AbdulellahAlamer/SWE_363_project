@@ -36,7 +36,6 @@ const normalizePath = (pathname) => {
 const goTo = (target) => {
   window.location.assign(target);
 };
-import Events from "./components/Events.jsx";
 
 function App() {
   const path = normalizePath(window.location.pathname);

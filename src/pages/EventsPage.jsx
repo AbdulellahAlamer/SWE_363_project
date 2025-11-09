@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+// Navigation Bar Component
 function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
   const containerClasses = `${
     fixed ? "fixed left-0 top-0 h-full" : "relative"
