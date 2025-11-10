@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { sampleEvents } from "../assets/data.js";
 // Navigation Bar Component
 function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
   const containerClasses = `${
@@ -44,45 +45,6 @@ function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
     </div>
   );
 }
-
-const sampleEvents = [
-  {
-    id: 1,
-    type: "Workshop",
-    dateLabel: "MAR 22",
-    title: "Intro to Robotics",
-    desc: "Hands-on session building autonomous robots using Arduino kits.",
-    host: "Mechanical Engineering Club",
-    status: "upcoming",
-  },
-  {
-    id: 2,
-    type: "Hackathon",
-    dateLabel: "MAR 25",
-    title: "Hack the Future",
-    desc: "24-hour campus hackathon focused on AI-powered sustainability ideas.",
-    host: "Computer Club",
-    status: "upcoming",
-  },
-  {
-    id: 3,
-    type: "Sprint",
-    dateLabel: "APR 4",
-    title: "UX Design Sprint",
-    desc: "Collaborative sprint to reimagine the KFUPM campus app experience.",
-    host: "Design Society",
-    status: "upcoming",
-  },
-  {
-    id: 4,
-    type: "Seminar",
-    dateLabel: "APR 12",
-    title: "Cybersecurity 101",
-    desc: "Industry experts share the latest in threat detection and prevention.",
-    host: "Information Security Club",
-    status: "upcoming",
-  },
-];
 
 export default function Events() {
   const [filter, setFilter] = useState("upcoming");
