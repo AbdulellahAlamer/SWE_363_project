@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 
 function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
   const containerClasses = `${
@@ -104,6 +103,42 @@ const certificates = [
 ];
 
 export default function ProfilePage() {
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [profileData, setProfileData] = useState({
+    name: "Student Name",
+    major: "Electrical Engineering",
+    joinYear: "2022",
+    profileImage: null
+  });
+  const [editForm, setEditForm] = useState({ ...profileData });
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = () => {
+    setProfileData({
+      ...editForm,
+      profileImage: imagePreview || editForm.profileImage
+    });
+    setShowEditModal(false);
+    setImagePreview(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditForm({ ...profileData });
+    setImagePreview(null);
+    setShowEditModal(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <NavigationBar active="/profile" />
@@ -112,16 +147,25 @@ export default function ProfilePage() {
         {/* Profile Header */}
         <div className="mb-8 rounded-2xl bg-gradient-to-r from-slate-200 to-slate-300 p-8 shadow-lg relative">
           <div className="flex items-center gap-6">
-            <div className="h-24 w-24 rounded-full bg-white shadow-md"></div>
+            <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden">
+              {profileData.profileImage ? (
+                <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
+              )}
+            </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold text-slate-900">
-                Student Name
+                {profileData.name}
               </h1>
               <p className="text-sm text-slate-700 mt-1">
-                Electrical Engineering · Joined 2022
+                {profileData.major} · Joined {profileData.joinYear}
               </p>
             </div>
-            <button className="absolute top-6 right-6 bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
+            <button 
+              onClick={() => setShowEditModal(true)}
+              className="absolute top-6 right-6 bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+            >
               Edit Profile
             </button>
           </div>
@@ -221,6 +265,94 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">Edit Profile</h2>
+            
+            {/* Profile Image Upload */}
+            <div className="mb-6 flex flex-col items-center">
+              <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden mb-3">
+                {(imagePreview || editForm.profileImage) ? (
+                  <img 
+                    src={imagePreview || editForm.profileImage} 
+                    alt="Profile Preview" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
+                )}
+              </div>
+              <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                Upload Photo
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Major
+                </label>
+                <input
+                  type="text"
+                  value={editForm.major}
+                  onChange={(e) => setEditForm({ ...editForm, major: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Join Year
+                </label>
+                <input
+                  type="text"
+                  value={editForm.joinYear}
+                  onChange={(e) => setEditForm({ ...editForm, joinYear: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelEdit}
+                className="flex-1 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
