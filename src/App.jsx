@@ -98,6 +98,9 @@ function App() {
                   announcements in one place. Connect with community leaders and
                   discover opportunities tailored for you.
                 </p>
+                <p>admin@gmail.com password: 12345678</p>
+                <p>clubPresident@gmail.com password: 12345678</p>
+                <p>student@gmail.com password: 12345678</p>
               </div>
             )}
 

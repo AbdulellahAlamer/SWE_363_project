@@ -105,12 +105,6 @@ export const loginUsers = [
   { id: "user-student-1", email: "student@gmail.com", password: "12345678" },
 ];
 
-export const loginRouteByEmail = {
-  "admin@gmail.com": "/admin",
-  "clubPresident@gmail.com": "/president",
-  "student@gmail.com": "/clubs",
-};
-
 export const profileAttendedEvents = [
   {
     id: "evt-004",

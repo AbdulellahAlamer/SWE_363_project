@@ -30,12 +30,14 @@ const normalizeField = (field) => {
   if (typeof field === "string") {
     return {
       name: field,
-      label: field.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      label: field
+        .replace(/[_-]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase()),
       dataType: "string",
     };
   }
   return {
-    name: field.name,
+    name: field.name || field.label,
     label:
       field.label ||
       field.name.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
@@ -49,10 +51,15 @@ const normalizeField = (field) => {
 const buildInitialValues = (fields, initialValues = {}) =>
   fields.reduce((acc, field) => {
     const fieldType = field.dataType.toLowerCase();
-    if (initialValues[field.name] !== undefined && initialValues[field.name] !== null) {
-      acc[field.name] = fieldType === "boolean"
-        ? Boolean(initialValues[field.name])
-        : String(initialValues[field.name]);
+
+    if (
+      initialValues[field.name] !== undefined &&
+      initialValues[field.name] !== null
+    ) {
+      acc[field.name] =
+        fieldType === "boolean"
+          ? Boolean(initialValues[field.name])
+          : String(initialValues[field.name]);
     } else {
       acc[field.name] = DEFAULT_VALUE_BY_TYPE[fieldType] ?? "";
     }
@@ -126,11 +133,9 @@ function PopupForm({
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
         <header className="mb-6 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-blue-500">
-              {method}
-            </p>
             <h2 className="text-xl font-semibold text-slate-900">
-              {submitLabel || (method === "POST" ? "Create Record" : "Update Record")}
+              {submitLabel ||
+                (method === "POST" ? "Create Record" : "Update Record")}
             </h2>
           </div>
           <button
@@ -146,12 +151,15 @@ function PopupForm({
         <form className="space-y-4" onSubmit={handleSubmit}>
           {normalizedFields.map((field) => {
             const inputType =
-              (INPUT_TYPE_MAP[field.dataType?.toLowerCase()] || "text");
+              INPUT_TYPE_MAP[field.dataType?.toLowerCase()] || "text";
             const value = formValues[field.name];
 
             if (field.options && Array.isArray(field.options)) {
               return (
-                <label key={field.name} className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <label
+                  key={field.name}
+                  className="flex flex-col gap-2 text-sm font-medium text-slate-700"
+                >
                   <span>{field.label}</span>
                   <select
                     value={value ?? ""}
@@ -159,7 +167,10 @@ function PopupForm({
                     className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                   >
                     {field.options.map((option) => (
-                      <option key={option.value ?? option} value={option.value ?? option}>
+                      <option
+                        key={option.value ?? option}
+                        value={option.value ?? option}
+                      >
                         {option.label ?? option}
                       </option>
                     ))}
@@ -186,7 +197,10 @@ function PopupForm({
             }
 
             return (
-              <label key={field.name} className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+              <label
+                key={field.name}
+                className="flex flex-col gap-2 text-sm font-medium text-slate-700"
+              >
                 <span>{field.label}</span>
                 <input
                   type={inputType}

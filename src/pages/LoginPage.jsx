@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Button from "../components/Button.jsx";
+import PopupForm from "../components/PopupForm.jsx";
 
 function AuthField({
   label,
@@ -22,10 +23,20 @@ function AuthField({
   );
 }
 
+const forgotFields = [
+  {
+    name: "email",
+    label: "KFUPM email",
+    dataType: "email",
+    placeholder: "you@student.kfupm.edu.sa",
+  },
+];
+
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [feedback, setFeedback] = useState(null);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const USERS = [
     { email: "admin@gmail.com", password: "12345678" },
@@ -102,6 +113,7 @@ function LoginPage() {
           <button
             type="button"
             className="font-medium text-blue-600 hover:text-blue-700"
+            onClick={() => setShowForgotModal(true)}
           >
             Forgot password?
           </button>
@@ -130,6 +142,15 @@ function LoginPage() {
           Create one now
         </button>
       </p>
+      {showForgotModal && (
+        <PopupForm
+          method="POST"
+          endpoint="/api/auth/forgot-password"
+          fields={forgotFields}
+          submitLabel="Reset password"
+          onClose={() => setShowForgotModal(false)}
+        />
+      )}
     </div>
   );
 }
