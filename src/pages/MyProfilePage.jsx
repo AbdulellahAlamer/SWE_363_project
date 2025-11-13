@@ -1,47 +1,5 @@
-import React, { useState } from "react";
-
-function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
-  const containerClasses = `${
-    fixed ? "fixed left-0 top-0 h-full" : "relative"
-  } w-64 bg-white text-gray-700 p-4 flex flex-col shadow-lg`;
-
-  const linkClass = (href) => {
-    const base = "p-3 rounded-lg transition-colors";
-    const activeClass = "bg-blue-600 text-white";
-    const hoverClass = "hover:bg-blue-600 hover:text-white";
-    return `${base} ${active === href ? activeClass : hoverClass}`;
-  };
-
-  const links = [
-    { href: "/", label: "Home" },
-    { href: "/clubs", label: "Clubs" },
-    { href: "/events", label: "Events" },
-    { href: "/posts", label: "Posts" },
-    { href: "/my-clubs", label: "My Clubs" },
-    { href: "/profile", label: "My Profile" },
-  ];
-
-  const visibleLinks = links.filter((l) => !hidden.includes(l.href));
-
-  return (
-    <div className={containerClasses}>
-      <h1 className="text-blue-600 font-bold text-xl mb-6">KFUPM</h1>
-      <nav className="flex flex-col space-y-4 grow">
-        {visibleLinks.map((link) => (
-          <a key={link.href} href={link.href} className={linkClass(link.href)}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
-      <button
-        onClick={() => (window.location.href = "/login")}
-        className="mt-auto w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors"
-      >
-        Log Out
-      </button>
-    </div>
-  );
-}
+import { useState } from "react";
+import NavigationBar from "../components/NavigationBar.jsx";
 
 const attendedEvents = [
   {
@@ -108,7 +66,7 @@ export default function ProfilePage() {
     name: "Student Name",
     major: "Electrical Engineering",
     joinYear: "2022",
-    profileImage: null
+    profileImage: null,
   });
   const [editForm, setEditForm] = useState({ ...profileData });
   const [imagePreview, setImagePreview] = useState(null);
@@ -127,7 +85,7 @@ export default function ProfilePage() {
   const handleSaveProfile = () => {
     setProfileData({
       ...editForm,
-      profileImage: imagePreview || editForm.profileImage
+      profileImage: imagePreview || editForm.profileImage,
     });
     setShowEditModal(false);
     setImagePreview(null);
@@ -141,7 +99,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <NavigationBar active="/profile" />
+      <NavigationBar active="/my-profile" />
 
       <div className="ml-64 flex-1 p-8 lg:p-10">
         {/* Profile Header */}
@@ -149,7 +107,11 @@ export default function ProfilePage() {
           <div className="flex items-center gap-6">
             <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden">
               {profileData.profileImage ? (
-                <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={profileData.profileImage}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
               )}
@@ -162,7 +124,7 @@ export default function ProfilePage() {
                 {profileData.major} · Joined {profileData.joinYear}
               </p>
             </div>
-            <button 
+            <button
               onClick={() => setShowEditModal(true)}
               className="absolute top-6 right-6 bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
             >
@@ -177,9 +139,7 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-slate-900">
               Attended Events
             </h2>
-            <span className="text-sm text-blue-600 font-medium">
-              15 events
-            </span>
+            <span className="text-sm text-blue-600 font-medium">15 events</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -270,16 +230,18 @@ export default function ProfilePage() {
       {showEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Edit Profile</h2>
-            
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+              Edit Profile
+            </h2>
+
             {/* Profile Image Upload */}
             <div className="mb-6 flex flex-col items-center">
               <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden mb-3">
-                {(imagePreview || editForm.profileImage) ? (
-                  <img 
-                    src={imagePreview || editForm.profileImage} 
-                    alt="Profile Preview" 
-                    className="w-full h-full object-cover" 
+                {imagePreview || editForm.profileImage ? (
+                  <img
+                    src={imagePreview || editForm.profileImage}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
@@ -305,7 +267,9 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -317,7 +281,9 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   value={editForm.major}
-                  onChange={(e) => setEditForm({ ...editForm, major: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, major: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -329,7 +295,9 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   value={editForm.joinYear}
-                  onChange={(e) => setEditForm({ ...editForm, joinYear: e.target.value })}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, joinYear: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

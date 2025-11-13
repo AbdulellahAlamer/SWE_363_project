@@ -26,13 +26,18 @@ function EventCard({ event }) {
       <div className="p-5">
         <div className="mb-3">
           <span className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700">
-            {(event.type || "").toUpperCase()} · {event.dateLabel || event.date || ""}
+            {(event.type || "").toUpperCase()} ·{" "}
+            {event.dateLabel || event.date || ""}
           </span>
         </div>
 
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">{event.title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900 mb-2">
+          {event.title}
+        </h3>
 
-        <p className="text-sm text-slate-500 mb-4">{event.desc || event.description}</p>
+        <p className="text-sm text-slate-500 mb-4">
+          {event.desc || event.description}
+        </p>
 
         <div className="text-xs text-slate-500 mb-4">
           <div className="uppercase tracking-wide text-[11px]">Hosted by</div>
@@ -60,7 +65,9 @@ function FilterButton({ label, active, onClick }) {
     <button
       onClick={onClick}
       className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
-        active ? "bg-blue-100 text-blue-700" : "bg-white/60 text-slate-600 hover:bg-white/80"
+        active
+          ? "bg-blue-100 text-blue-700"
+          : "bg-white/60 text-slate-600 hover:bg-white/80"
       }`}
     >
       {label}
@@ -85,13 +92,23 @@ export default function EventsPage() {
   const normalized = (sampleEvents || []).map((e) => ({
     ...e,
     desc: e.desc || e.description || "",
-    dateLabel: e.dateLabel || (e.date ? new Date(e.date).toLocaleString(undefined, { month: "short", day: "numeric" }).toUpperCase() : ""),
+    dateLabel:
+      e.dateLabel ||
+      (e.date
+        ? new Date(e.date)
+            .toLocaleString(undefined, { month: "short", day: "numeric" })
+            .toUpperCase()
+        : ""),
     uiStatus: normalizeStatus(e.status),
   }));
 
-  const filtered = normalized.filter((e) => (filter === "all" ? true : e.uiStatus === filter));
+  const filtered = normalized.filter((e) =>
+    filter === "all" ? true : e.uiStatus === filter
+  );
 
-  const upcomingCount = normalized.filter((e) => e.uiStatus === "upcoming").length;
+  const upcomingCount = normalized.filter(
+    (e) => e.uiStatus === "upcoming"
+  ).length;
   const pastCount = normalized.filter((e) => e.uiStatus === "past").length;
 
   return (
@@ -104,9 +121,21 @@ export default function EventsPage() {
           <h1 className="text-2xl font-bold text-slate-900">Events</h1>
 
           <div className="flex items-center gap-3 bg-white/60 rounded-full p-1 shadow-sm">
-            <FilterButton label="Upcoming" active={filter === "upcoming"} onClick={() => setFilter("upcoming")} />
-            <FilterButton label="Past" active={filter === "past"} onClick={() => setFilter("past")} />
-            <FilterButton label="All" active={filter === "all"} onClick={() => setFilter("all")} />
+            <FilterButton
+              label="Upcoming"
+              active={filter === "upcoming"}
+              onClick={() => setFilter("upcoming")}
+            />
+            <FilterButton
+              label="Past"
+              active={filter === "past"}
+              onClick={() => setFilter("past")}
+            />
+            <FilterButton
+              label="All"
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
+            />
           </div>
         </div>
 
@@ -124,7 +153,9 @@ export default function EventsPage() {
         </div>
 
         {filtered.length === 0 && (
-          <p className="mt-8 text-center text-sm text-slate-500">No {filter} events to show.</p>
+          <p className="mt-8 text-center text-sm text-slate-500">
+            No {filter} events to show.
+          </p>
         )}
       </div>
     </div>

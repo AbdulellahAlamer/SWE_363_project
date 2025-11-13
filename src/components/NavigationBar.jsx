@@ -21,7 +21,7 @@ function NavigationBar({
       { href: "/clubs", label: "Clubs" },
       { href: "/events", label: "Events" },
       { href: "/posts", label: "Posts" },
-      { href: "/profile", label: "My Profile" },
+      { href: "/my-profile", label: "My Profile" },
       { href: "/my-clubs", label: "My Clubs" },
     ];
   } else if (type === "admin") {
@@ -54,7 +54,7 @@ function NavigationBar({
       </nav>
       <button
         onClick={() => (window.location.href = "/login")}
-        className="mt-auto w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors"
+        className="mt-auto w-full border border-red-600 text-red-600 font-medium py-3 px-4 rounded-lg hover:bg-red-100 transition-colors"
       >
         Log Out
       </button>

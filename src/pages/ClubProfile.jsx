@@ -1,49 +1,5 @@
-import React, { useState } from "react";
-
-function NavigationBar({ fixed = true, active = "/", hidden = [] }) {
-  const containerClasses = `${
-    fixed ? "fixed left-0 top-0 h-full" : "relative"
-  } w-64 bg-white text-gray-700 p-4 flex flex-col shadow-lg`;
-
-  const linkClass = (href) => {
-    const base = "p-3 rounded-lg transition-colors";
-    const activeClass = "bg-blue-600 text-white";
-    const hoverClass = "hover:bg-blue-600 hover:text-white";
-    return `${base} ${active === href ? activeClass : hoverClass}`;
-  };
-
-  const links = [
-    { href: "/", label: "Home" },
-    { href: "/clubs", label: "Clubs" },
-    { href: "/events", label: "Events" },
-    { href: "/posts", label: "Posts" },
-    { href: "/profile", label: "My Profile" },
-    { href: "/my-clubs", label: "My Clubs" },
-    { href: "/admin", label: "Admin Console" },
-    { href: "/user-management", label: "User Management" },
-  ];
-
-  const visibleLinks = links.filter((l) => !hidden.includes(l.href));
-
-  return (
-    <div className={containerClasses}>
-      <h1 className="text-blue-600 font-bold text-xl mb-6">KFUPM</h1>
-      <nav className="flex flex-col space-y-4 grow">
-        {visibleLinks.map((link) => (
-          <a key={link.href} href={link.href} className={linkClass(link.href)}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
-      <button
-        onClick={() => (window.location.href = "/login")}
-        className="mt-auto w-full bg-red-600 text-white py-3 px-4 rounded-lg hover:bg-red-700 transition-colors"
-      >
-        Log Out
-      </button>
-    </div>
-  );
-}
+import { useState } from "react";
+import NavigationBar from "../components/NavigationBar.jsx";
 
 function Button({ variant = "primary", className = "", children, ...props }) {
   const baseStyle = "rounded-lg font-semibold transition-colors";
@@ -119,7 +75,7 @@ export default function ClubProfile({ club }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <NavigationBar active="/clubs" />
-      
+
       <div className="ml-64 flex-1 p-8 lg:p-12">
         {/* club header */}
         <div className="mb-10 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50/60 p-6 shadow-lg backdrop-blur-sm">
