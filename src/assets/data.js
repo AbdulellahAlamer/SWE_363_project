@@ -1,5 +1,12 @@
 // these data will make the life esasier because it is like the server responess
 
+export const adminStatistics = [
+  { label: "Total Clubs", value: "24" },
+  { label: "Upcoming Events", value: "156" },
+  { label: "Event Attendance", value: "1,234" },
+  { label: "New Registrations", value: "18" },
+];
+
 export const sampleEvents = [
   {
     id: "evt-001",
@@ -67,6 +74,7 @@ export const adminClubSeeds = [
     category: "Technology & Innovation",
     president: "Saeed Al-Qahtani",
     members: 860,
+    updated: "Updated 2d ago",
     updatedAt: "2024-03-13T15:45:00+03:00",
     status: "active",
     contactEmail: "csclub@kfupm.edu.sa",
@@ -78,6 +86,7 @@ export const adminClubSeeds = [
     category: "Engineering",
     president: "Vacant",
     members: 320,
+    updated: "Updated 1w ago",
     updatedAt: "2024-03-08T11:20:00+03:00",
     status: "awaiting-president",
     contactEmail: "ie.society@kfupm.edu.sa",
@@ -89,6 +98,7 @@ export const adminClubSeeds = [
     category: "Engineering",
     president: "Sara Al-Otaibi",
     members: 540,
+    updated: "Updated 3d ago",
     updatedAt: "2024-03-12T09:05:00+03:00",
     status: "active",
     contactEmail: "me.club@kfupm.edu.sa",
