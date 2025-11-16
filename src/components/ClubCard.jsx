@@ -1,7 +1,7 @@
 import Button from "./Button";
 
 function ClubCard({ club, onJoin, onView }) {
-  return (
+return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-600 transition flex flex-col">
       {/* Logo */}
       <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
