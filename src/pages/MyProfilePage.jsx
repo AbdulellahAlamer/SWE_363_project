@@ -1,9 +1,6 @@
 import { useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
-// import { AttendedEvents, profileJoinedClubs, certificates } from "../assets/data.js";
-import AttendedEvents from "../assets/data.js";
-import profileJoinedClubs from "../assets/data.js";
-import certificates from "../assets/data.js";
+import AttendedEvents, { profileJoinedClubs, certificates } from "../assets/data.js";
 
 export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
@@ -81,13 +78,16 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <NavigationBar active="/my-profile" />
+      {/* Hide navigation on mobile, show on larger screens */}
+      <div className="hidden md:block">
+        <NavigationBar active="/my-profile" />
+      </div>
 
-      <div className="ml-64 flex-1 p-8 lg:p-10">
-        {/* Profile Header */}
-        <div className="mb-8 rounded-2xl bg-gradient-to-r from-slate-200 to-slate-300 p-8 shadow-lg relative">
-          <div className="flex items-center gap-6">
-            <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden">
+      <div className="w-full md:ml-64 flex-1 p-4 sm:p-6 lg:p-10">
+        {/* Profile Header - Mobile Responsive */}
+        <div className="mb-6 sm:mb-8 rounded-2xl bg-gradient-to-r from-slate-200 to-slate-300 p-4 sm:p-6 lg:p-8 shadow-lg relative">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white shadow-md overflow-hidden flex-shrink-0">
               {profileData.profileImage ? (
                 <img
                   src={profileData.profileImage}
@@ -98,42 +98,42 @@ export default function ProfilePage() {
                 <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
               )}
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-slate-900">
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">
                 {profileData.name}
               </h1>
-              <p className="text-sm text-slate-700 mt-1">
+              <p className="text-xs sm:text-sm text-slate-700 mt-1">
                 {profileData.major} · Joined {profileData.joinYear}
               </p>
             </div>
             <button
               onClick={() => setShowEditModal(true)}
-              className="absolute top-6 right-6 bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+              className="sm:absolute sm:top-4 sm:right-4 lg:top-6 lg:right-6 bg-white text-blue-600 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-50 transition-colors w-full sm:w-auto"
             >
               Edit Profile
             </button>
           </div>
         </div>
 
-        {/* Attended Events Section */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900">
+        {/* Attended Events Section - Mobile Responsive */}
+        <div className="mb-8 sm:mb-10">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">
               Attended Events
             </h2>
-            <span className="text-sm text-blue-600 font-medium">
+            <span className="text-xs sm:text-sm text-blue-600 font-medium">
               {AttendedEvents.length} events
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {AttendedEvents.map((event) => (
               <div
                 key={event.id}
-                className="rounded-xl bg-white p-5 shadow-md hover:shadow-lg transition-shadow"
+                className="rounded-xl bg-white p-4 sm:p-5 shadow-md hover:shadow-lg transition-shadow"
               >
-                <div className="h-24 mb-4 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200"></div>
-                <h3 className="font-semibold text-slate-900 mb-1">
+                <div className="h-20 sm:h-24 mb-3 sm:mb-4 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200"></div>
+                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1">
                   {event.title}
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -144,39 +144,39 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Joined Clubs Section */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Joined Clubs</h2>
-            <span className="text-sm text-blue-600 font-medium">
+        {/* Joined Clubs Section - Mobile Responsive */}
+        <div className="mb-8 sm:mb-10">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Joined Clubs</h2>
+            <span className="text-xs sm:text-sm text-blue-600 font-medium">
               {profileJoinedClubs?.length || 0} clubs
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {profileJoinedClubs && profileJoinedClubs.length > 0 ? (
               profileJoinedClubs.map((club) => (
                 <div
                   key={club.id}
-                  className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                  className="rounded-xl bg-white p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                 >
                   <div className="flex flex-col items-center">
-                    <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg mb-3">
+                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-base sm:text-lg mb-2 sm:mb-3">
                       {clubAbbreviations[club?.name] ||
                         club?.name?.charAt(0) ||
                         "C"}
                     </div>
-                    <h3 className="font-semibold text-slate-900 text-center">
-                      {club.club || "Club Name"}
+                    <h3 className="font-semibold text-xs sm:text-sm text-slate-900 text-center">
+                      {club.name || "Club Name"}
                     </h3>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="col-span-full text-center py-8">
+              <div className="col-span-full text-center py-6 sm:py-8">
                 <div className="text-slate-400 mb-2">
                   <svg
-                    className="w-12 h-12 mx-auto"
+                    className="w-10 h-10 sm:w-12 sm:h-12 mx-auto"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                     />
                   </svg>
                 </div>
-                <p className="text-slate-500 text-sm">No clubs joined yet</p>
+                <p className="text-slate-500 text-xs sm:text-sm">No clubs joined yet</p>
                 <p className="text-slate-400 text-xs mt-1">
                   Join clubs to see them here
                 </p>
@@ -198,40 +198,40 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Certificates Section */}
+        {/* Certificates Section - Mobile Responsive */}
         <div>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Certificates</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Certificates</h2>
             <button
               onClick={handleDownloadAll}
-              className="text-sm text-blue-600 font-medium hover:underline"
+              className="text-xs sm:text-sm text-blue-600 font-medium hover:underline"
             >
               Download All
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {certificates.map((cert) => (
               <div
                 key={cert.id}
-                className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition-shadow"
+                className="rounded-xl bg-white p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow"
               >
-                <h3 className="font-semibold text-slate-900 mb-2">
+                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-2">
                   {cert.title}
                 </h3>
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-xs text-slate-500 mb-3 sm:mb-4">
                   Issued by {cert.issuer} · {cert.date}
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewCertificate(cert)}
-                    className="flex-1 bg-white text-blue-600 border border-blue-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                    className="flex-1 bg-white text-blue-600 border border-blue-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-50 transition-colors"
                   >
                     View
                   </button>
                   <button
                     onClick={() => handleDownloadCertificate(cert)}
-                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
                     Download
                   </button>
@@ -242,17 +242,17 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal - Mobile Responsive */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-6">
               Edit Profile
             </h2>
 
             {/* Profile Image Upload */}
-            <div className="mb-6 flex flex-col items-center">
-              <div className="h-24 w-24 rounded-full bg-white shadow-md overflow-hidden mb-3">
+            <div className="mb-4 sm:mb-6 flex flex-col items-center">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white shadow-md overflow-hidden mb-3">
                 {imagePreview || editForm.profileImage ? (
                   <img
                     src={imagePreview || editForm.profileImage}
@@ -263,7 +263,7 @@ export default function ProfilePage() {
                   <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
                 )}
               </div>
-              <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+              <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
                 Upload Photo
                 <input
                   type="file"
@@ -275,9 +275,9 @@ export default function ProfilePage() {
             </div>
 
             {/* Form Fields */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                   Name
                 </label>
                 <input
@@ -286,12 +286,12 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setEditForm({ ...editForm, name: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                   Major
                 </label>
                 <input
@@ -300,12 +300,12 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setEditForm({ ...editForm, major: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                   Join Year
                 </label>
                 <input
@@ -314,22 +314,22 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setEditForm({ ...editForm, joinYear: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex gap-3">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={handleCancelEdit}
-                className="flex-1 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                className="flex-1 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-slate-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveProfile}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
               >
                 Save Changes
               </button>
