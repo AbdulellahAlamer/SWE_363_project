@@ -28,9 +28,8 @@ export default function EventCard({ event }) {
         variant="secondary"
         className="text-xs sm:text-sm w-full sm:w-max px-3 py-1.5"
         onClick={() => alert(`Registered for ${event.title}`)}
-        disabled={event.uiStatus === "past"}
       >
-        {event.uiStatus === "past" ? "Closed" : "Register"}
+        Register
       </Button>
     </article>
   );

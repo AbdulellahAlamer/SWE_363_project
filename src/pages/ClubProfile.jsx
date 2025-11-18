@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
 import Button from "../components/Button.jsx";
-import EventCard from "../components/EventCard.jsx";
+import EventCard from "../components/EventCardProf.jsx";
 import StatCard from "../components/StatCard.jsx";
 import { sampleEvents, adminClubSeeds } from "../assets/data.js";
 
