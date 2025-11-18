@@ -115,7 +115,7 @@ export const loginUsers = [
   { id: "user-student-1", email: "student@gmail.com", password: "12345678" },
 ];
 
-export const profileAttendedEvents = [
+ const AttendedEvents = [
   {
     id: "evt-004",
     title: "Cybersecurity 101",
@@ -141,6 +141,7 @@ export const profileAttendedEvents = [
     club: "ME Club",
   },
 ];
+export default AttendedEvents;
 
 export const profileJoinedClubs = [
   { id: "membership-001", name: "Computer Club" },
@@ -149,30 +150,29 @@ export const profileJoinedClubs = [
   { id: "membership-013", name: "Gamers Club" },
   { id: "membership-017", name: "Petroleum Eng. Club" },
 ];
-
-export const profileCertificates = [
+export const certificates = [
   {
-    id: "cert-2023-01",
+    id: 1,
     year: "2023",
     title: "AI Bootcamp Completion",
     issuer: "Computer Club",
-    date: "2023-03-20",
-    link: "/api/certificates/cert-2023-01/download",
+    date: "Mar 20",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23dbeafe' width='600' height='400'/%3E%3Crect x='20' y='20' width='560' height='360' fill='none' stroke='%233b82f6' stroke-width='4'/%3E%3Ctext x='300' y='80' font-size='32' font-weight='bold' fill='%231e40af' text-anchor='middle'%3EAI Bootcamp Completion%3C/text%3E%3Ctext x='300' y='150' font-size='18' fill='%232563eb' text-anchor='middle'%3EComputer Club%3C/text%3E%3Ctext x='300' y='220' font-size='16' fill='%235b21b6' text-anchor='middle'%3EAwarded on March 20, 2023%3C/text%3E%3Ctext x='300' y='280' font-size='14' fill='%23475569' text-anchor='middle'%3EThis certificate recognizes successful completion%3C/text%3E%3Ctext x='300' y='310' font-size='14' fill='%23475569' text-anchor='middle'%3Eof the intensive AI Bootcamp program%3C/text%3E%3C/svg%3E",
   },
   {
-    id: "cert-2022-04",
+    id: 2,
     year: "2022",
     title: "Leadership Lab Facilitator",
     issuer: "ISE Club",
-    date: "2022-11-18",
-    link: "/api/certificates/cert-2022-04/download",
+    date: "Nov 18",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23fce7f3' width='600' height='400'/%3E%3Crect x='20' y='20' width='560' height='360' fill='none' stroke='%23ec4899' stroke-width='4'/%3E%3Ctext x='300' y='80' font-size='32' font-weight='bold' fill='%23831843' text-anchor='middle'%3ELeadership Lab Facilitator%3C/text%3E%3Ctext x='300' y='150' font-size='18' fill='%23be185d' text-anchor='middle'%3EISE Club%3C/text%3E%3Ctext x='300' y='220' font-size='16' fill='%235b21b6' text-anchor='middle'%3EAwarded on November 18, 2022%3C/text%3E%3Ctext x='300' y='280' font-size='14' fill='%23475569' text-anchor='middle'%3EFor outstanding leadership and facilitation%3C/text%3E%3Ctext x='300' y='310' font-size='14' fill='%23475569' text-anchor='middle'%3Ein the Leadership Lab program%3C/text%3E%3C/svg%3E",
   },
   {
-    id: "cert-2021-07",
+    id: 3,
     year: "2021",
     title: "Volunteer Excellence Award",
     issuer: "Student Affairs",
-    date: "2021-05-04",
-    link: "/api/certificates/cert-2021-07/download",
+    date: "May 04", 
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect fill='%23fef3c7' width='600' height='400'/%3E%3Crect x='20' y='20' width='560' height='360' fill='none' stroke='%23f59e0b' stroke-width='4'/%3E%3Ctext x='300' y='80' font-size='32' font-weight='bold' fill='%23b45309' text-anchor='middle'%3EVolunteer Excellence Award%3C/text%3E%3Ctext x='300' y='150' font-size='18' fill='%23d97706' text-anchor='middle'%3EStudent Affairs%3C/text%3E%3Ctext x='300' y='220' font-size='16' fill='%235b21b6' text-anchor='middle'%3EAwarded on May 04, 2021%3C/text%3E%3Ctext x='300' y='280' font-size='14' fill='%23475569' text-anchor='middle'%3EFor exceptional volunteer contributions%3C/text%3E%3Ctext x='300' y='310' font-size='14' fill='%23475569' text-anchor='middle'%3Eand community service%3C/text%3E%3C/svg%3E",
   },
 ];
