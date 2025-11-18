@@ -2,13 +2,11 @@ import { useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
 // import { AttendedEvents, profileJoinedClubs, certificates } from "../assets/data.js";
 import AttendedEvents from "../assets/data.js";
-import  profileJoinedClubs  from "../assets/data.js";
-import  certificates from "../assets/data.js";
+import profileJoinedClubs from "../assets/data.js";
+import certificates from "../assets/data.js";
 
 export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showCertificateModal, setShowCertificateModal] = useState(false);
-  const [selectedCertificate, setSelectedCertificate] = useState(null);
   const [profileData, setProfileData] = useState({
     name: "Student Name",
     major: "Electrical Engineering",
@@ -45,8 +43,10 @@ export default function ProfilePage() {
   };
 
   const handleViewCertificate = (cert) => {
-    setSelectedCertificate(cert);
-    setShowCertificateModal(true);
+    const url =
+      cert?.imageUrl ||
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsfYYckqdKARgMY6TUhcOnl8Fy5IuPIrj8qQ&s";
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleDownloadCertificate = (cert) => {
@@ -145,44 +145,58 @@ export default function ProfilePage() {
         </div>
 
         {/* Joined Clubs Section */}
-<div className="mb-10">
-  <div className="flex items-center justify-between mb-6">
-    <h2 className="text-xl font-bold text-slate-900">Joined Clubs</h2>
-    <span className="text-sm text-blue-600 font-medium">
-      {profileJoinedClubs?.length || 0} clubs
-    </span>
-  </div>
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-slate-900">Joined Clubs</h2>
+            <span className="text-sm text-blue-600 font-medium">
+              {profileJoinedClubs?.length || 0} clubs
+            </span>
+          </div>
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {profileJoinedClubs && profileJoinedClubs.length > 0 ? (
-      profileJoinedClubs.map((club) => (
-        <div
-          key={club.id}
-          className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-        >
-          <div className="flex flex-col items-center">
-            <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg mb-3">
-              {clubAbbreviations[club?.name] || club?.name?.charAt(0) || "C"}
-            </div>
-            <h3 className="font-semibold text-slate-900 text-center">
-              {club.club || "Club Name"}
-            </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {profileJoinedClubs && profileJoinedClubs.length > 0 ? (
+              profileJoinedClubs.map((club) => (
+                <div
+                  key={club.id}
+                  className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-lg mb-3">
+                      {clubAbbreviations[club?.name] ||
+                        club?.name?.charAt(0) ||
+                        "C"}
+                    </div>
+                    <h3 className="font-semibold text-slate-900 text-center">
+                      {club.club || "Club Name"}
+                    </h3>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <div className="text-slate-400 mb-2">
+                  <svg
+                    className="w-12 h-12 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                </div>
+                <p className="text-slate-500 text-sm">No clubs joined yet</p>
+                <p className="text-slate-400 text-xs mt-1">
+                  Join clubs to see them here
+                </p>
+              </div>
+            )}
           </div>
         </div>
-      ))
-    ) : (
-      <div className="col-span-full text-center py-8">
-        <div className="text-slate-400 mb-2">
-          <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-          </svg>
-        </div>
-        <p className="text-slate-500 text-sm">No clubs joined yet</p>
-        <p className="text-slate-400 text-xs mt-1">Join clubs to see them here</p>
-      </div>
-    )}
-  </div>
-</div>
 
         {/* Certificates Section */}
         <div>
@@ -202,11 +216,6 @@ export default function ProfilePage() {
                 key={cert.id}
                 className="rounded-xl bg-white p-6 shadow-md hover:shadow-lg transition-shadow"
               >
-                <div className="mb-3">
-                  <span className="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded">
-                    {cert.year}
-                  </span>
-                </div>
                 <h3 className="font-semibold text-slate-900 mb-2">
                   {cert.title}
                 </h3>
@@ -323,48 +332,6 @@ export default function ProfilePage() {
                 className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
               >
                 Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Certificate Viewer Modal */}
-      {showCertificateModal && selectedCertificate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-slate-900">
-                {selectedCertificate.title}
-              </h2>
-              <button
-                onClick={() => setShowCertificateModal(false)}
-                className="text-slate-500 hover:text-slate-700 text-2xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <img
-                src={selectedCertificate.imageUrl}
-                alt={selectedCertificate.title}
-                className="w-full rounded-lg border border-slate-200"
-              />
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleDownloadCertificate(selectedCertificate)}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Download Certificate
-              </button>
-              <button
-                onClick={() => setShowCertificateModal(false)}
-                className="flex-1 bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded-lg font-medium hover:bg-slate-50 transition-colors"
-              >
-                Close
               </button>
             </div>
           </div>
