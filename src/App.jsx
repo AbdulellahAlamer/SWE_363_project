@@ -9,11 +9,13 @@ import MyClubsPage from "./pages/MyClubsPage.jsx";
 import PostsPage from "./pages/PostsPage.jsx";
 import MyProfilePage from "./pages/MyProfilePage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 const routes = {
   "/": LoginPage,
   "/login": LoginPage,
   "/register": RegisterPage,
+  "/reset-password": ResetPassword,
   "/admin": AdminPage,
   "/president": PresidentPage,
   "/clubs": ClubsPage,
