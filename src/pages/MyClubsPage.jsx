@@ -77,9 +77,9 @@ export default function MyClubsPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center gap-3">
+                                <div className="mt-4 flex items-center gap-3">
                   <a
-                    href={`/clubs/${club.id}`}
+                    href={`/club-profile?club=${encodeURIComponent(club.id)}`}
                     className="flex-1"
                     aria-label={`Open ${club.name} events`}
                   >
