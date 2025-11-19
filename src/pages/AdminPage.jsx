@@ -111,43 +111,45 @@ export default function AdminPage() {
     onCancelEdit();
   };
   return (
-    <div className="flex min-h-screen">
-      <NavigationBar active="/admin" type="admin" />
-      <div className="flex-1 ml-64">
+    <div className="flex flex-col md:flex-row min-h-screen">
+      <div className="md:fixed md:left-0 md:top-0 md:h-full z-10 w-full md:w-64">
+        <NavigationBar active="/admin" type="admin" />
+      </div>
+      <div className="flex-1 md:ml-64 w-full max-w-full">
         <StatisticsNavbar stats={adminStatistics} />
-        <div className="mx-8 mb-4">
+        <div className="mx-2 md:mx-8 mb-4 mt-4 md:mt-0">
           <h2 className="text-xl font-semibold">Club Catalog</h2>
         </div>
 
-        <div className="mx-8 bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
+        <div className="mx-2 md:mx-8 bg-white rounded-lg shadow-md p-2 md:p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
               <input
                 type="text"
                 placeholder="Search clubs"
-                className="px-4 py-2 border rounded-lg w-64"
+                className="px-4 py-2 border rounded-lg w-full sm:w-64"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <div className="flex gap-4">
-                <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+              <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
+                <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
                   All
                 </button>
-                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg">
+                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
                   Awaiting Approval
                 </button>
-                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg">
+                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
                   Inactive
                 </button>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700">
+            <button className="text-blue-600 hover:text-blue-700 w-full md:w-auto">
               Refresh
             </button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="text-left border-b border-gray-200">
                   <th className="pb-3 text-gray-600">CLUB</th>
@@ -185,15 +187,15 @@ export default function AdminPage() {
         </div>
 
         {/* Create New Club Section */}
-        <div className="mx-8 mb-4 mt-8">
+        <div className="mx-2 md:mx-8 mb-4 mt-8">
           <h2 className="text-xl font-semibold">Create New Club</h2>
         </div>
 
-        <SectionCard className="mx-8">
+        <SectionCard className="mx-2 md:mx-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
             Draft the club profile, assign the leadership team, and publish when you are ready for students to subscribe.
           </div>
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <FormField label="Club Name">
               <input
                 type="text"
@@ -229,7 +231,7 @@ export default function AdminPage() {
               onChange={(e) => setDescription(e.target.value)}
             ></textarea>
           </FormField>
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <FormField label="Contact Email">
               <input
                 type="email"
@@ -269,18 +271,18 @@ export default function AdminPage() {
         </SectionCard>
 
         {/* Create President Account Section */}
-        <div className="mx-8 mb-4 mt-8">
+        <div className="mx-2 md:mx-8 mb-4 mt-8">
           <h2 className="text-xl font-semibold">Create President Account</h2>
           <span className="text-blue-600 text-sm ml-4">
             Provision secure leadership access
           </span>
         </div>
 
-        <SectionCard className="mx-8 mb-8">
+        <SectionCard className="mx-2 md:mx-8 mb-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
             Invite a new club leader by creating their account, assigning them to a club, and triggering an onboarding email with temporary credentials.
           </div>
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <FormField label="Full Name">
               <input
                 type="text"
@@ -309,7 +311,7 @@ export default function AdminPage() {
               />
             </FormField>
           </div>
-          <div className="grid grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <FormField label="Phone Number">
               <input
                 type="text"
@@ -340,7 +342,7 @@ export default function AdminPage() {
               </select>
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <FormField label="Temporary Password">
               <div className="flex gap-2">
                 <input
