@@ -3,6 +3,10 @@ import NavigationBar from "../components/NavigationBar";
 import PostCard from "../components/PostCard";
 import PopupForm from "../components/PopupForm";
 
+// 1. **IMPORT THE IMAGE:** // Use a relative path from PostsPage.jsx (in src/pages) 
+// back to src/assets/images/funny.png
+import funnyImage from "../assets/images/funny.png"; 
+
 /* Mock posts — replace with real data / API later */
 const SAMPLE_POSTS = [
   {
@@ -13,7 +17,8 @@ const SAMPLE_POSTS = [
     title: "Hack the Future Winners",
     body:
       "Congratulations to Team Catalyst for securing first place in the smart-campus track! Their AI powered energy dashboard impressed the judges.",
-    imageUrl: null,
+    // 2. **USE THE IMPORTED VARIABLE:**
+    imageUrl: funnyImage, 
     tag: "Event Recap",
     likes: 86,
     comments: 24,
@@ -26,7 +31,8 @@ const SAMPLE_POSTS = [
     title: "Lean Workshop Materials",
     body:
       "Slides and templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
-    imageUrl: null,
+    // 3. **USE THE IMPORTED VARIABLE AGAIN:**
+    imageUrl: funnyImage, 
     tag: "Resources",
     likes: 42,
     comments: 13,
@@ -47,6 +53,10 @@ const SAMPLE_POSTS = [
 ];
 
 export default function PostsPage() {
+// ... (rest of the component code remains the same)
+
+// ... (handleEdit and closePopup functions)
+
   const [posts, setPosts] = useState(SAMPLE_POSTS);
   const [editingPost, setEditingPost] = useState(null);
 

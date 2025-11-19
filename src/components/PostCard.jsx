@@ -1,6 +1,6 @@
 import Button from "./Button";
 
-function PostCard({ post, onEdit }) {
+function PostCard({ post, onEdit, userType }) {
   return (
     <article className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition flex flex-col">
       <header className="flex items-start justify-between gap-4">
@@ -14,24 +14,34 @@ function PostCard({ post, onEdit }) {
           </div>
         </div>
 
-        <div className="text-sm">
-          <button
-            onClick={() => onEdit?.(post.id)}
-            className="text-slate-500 hover:text-slate-700 text-sm rounded px-2 py-1"
-            aria-label="Edit post"
-          >
-            Edit
-          </button>
-        </div>
+        {userType === "admin" && (
+          <div className="text-sm">
+            <button
+              onClick={() => onEdit?.(post.id)}
+              className="text-slate-500 hover:text-slate-700 text-sm rounded px-2 py-1"
+              aria-label="Edit post"
+            >
+              Edit
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="mt-4">
         <h3 className="text-lg font-semibold text-slate-900 mb-2">{post.title}</h3>
         <p className="text-sm text-slate-600 mb-4 line-clamp-3">{post.body}</p>
 
-        <div className="w-full rounded-lg overflow-hidden bg-gray-100 aspect-video mb-4 flex items-center justify-center text-gray-400">
+        {/* -- FIX APPLIED HERE --
+          1. Changed 'object-cover' to 'object-contain' to show the full image without cropping.
+          2. Added 'bg-slate-200' to the container to make the empty space visible.
+        */}
+        <div className="w-full rounded-lg overflow-hidden bg-slate-200 aspect-video mb-4 flex items-center justify-center text-gray-400">
           {post.imageUrl ? (
-            <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+            <img 
+              src={post.imageUrl} 
+              alt={post.title} 
+              className="w-full h-full object-contain" // Key change: object-contain
+            />
           ) : (
             <div className="text-sm">600 × 320</div>
           )}
