@@ -96,6 +96,7 @@ export default function MyClubsPage() {
                     Unsubscribe
                   </Button>
                 </div>
+
               </article>
             ))}
           </section>
@@ -104,4 +105,3 @@ export default function MyClubsPage() {
     </div>
   );
 }
-// ...existing code...

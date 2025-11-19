@@ -8,43 +8,48 @@ export default function ClubsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
+  // track joined clubs by id
+  const [joinedIds, setJoinedIds] = useState(new Set());
+  // club object used to show popup after join
+  const [joinedClubPopup, setJoinedClubPopup] = useState(null);
+
   // Extract unique categories
   const categories = ['All', ...new Set(adminClubSeeds.map(club => club.category))];
 
   // Filter clubs based on search and category
   const filteredClubs = adminClubSeeds.filter(club => {
-    const matchesSearch = club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         club.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (club.category || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || club.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleJoin = (clubId) => {
-    console.log('Join club:', clubId);
-    // Add join logic here
+  const handleJoin = (club) => {
+    setJoinedIds(prev => {
+      const next = new Set(prev);
+      next.add(club.id);
+      return next;
+    });
+    setJoinedClubPopup(club);
   };
 
+  // NAVIGATION: open club-profile and include club id so ClubProfile can load correct club
   const handleView = (clubId) => {
-    console.log('View club:', clubId);
-    // Add navigation logic here
+    window.location.href = `/club-profile?club=${encodeURIComponent(clubId)}`;
   };
 
   return (
     <div className="flex">
-      {/* Navigation Sidebar */}
       <NavigationBar active="/clubs" type="student" />
 
-      {/* Main Content */}
       <div className="ml-64 flex-1 min-h-screen bg-gray-50">
-        {/* Header */}
         <div className="max-w-6xl mx-auto px-8 py-12 text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Discover Clubs</h1>
           <p className="text-lg text-gray-600">Join communities and connect with like-minded students</p>
         </div>
 
-        {/* Filters */}
         <div className="max-w-6xl mx-auto px-8 mb-8">
-          {/* Search */}
           <div className="mb-6">
             <input
               type="text"
@@ -55,7 +60,6 @@ export default function ClubsPage() {
             />
           </div>
 
-          {/* Categories */}
           <div className="flex flex-wrap gap-3 mb-8">
             {categories.map(category => (
               <Button
@@ -70,7 +74,6 @@ export default function ClubsPage() {
           </div>
         </div>
 
-        {/* Clubs Grid */}
         <div className="max-w-6xl mx-auto px-8 pb-12">
           {filteredClubs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -78,8 +81,9 @@ export default function ClubsPage() {
                 <ClubCard
                   key={club.id}
                   club={club}
-                  onJoin={() => handleJoin(club.id)}
-                  onView={() => handleView(club.id)}
+                  isJoined={joinedIds.has(club.id)}
+                  onJoin={() => handleJoin(club)}
+                  onView={handleView} // pass handler; ClubCard will call with id
                 />
               ))}
             </div>
@@ -90,6 +94,29 @@ export default function ClubsPage() {
           )}
         </div>
       </div>
+
+      {joinedClubPopup && (
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-lg">
+            <h2 className="text-xl font-semibold mb-2">You're in!</h2>
+            <p className="text-sm text-slate-600 mb-4">You have joined <span className="font-medium">{joinedClubPopup.name}</span>.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-100 text-slate-700"
+                onClick={() => setJoinedClubPopup(null)}
+              >
+                Close
+              </button>
+              <a
+                href={`/events?club=${encodeURIComponent(joinedClubPopup.id)}`}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+              >
+                View club events
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
