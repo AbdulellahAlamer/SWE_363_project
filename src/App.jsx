@@ -54,8 +54,8 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-5xl overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-2xl ring-1 ring-white/60 backdrop-blur">
+    <div className="min-h-screen bg-linear-to-br from-slate-100 via-white to-slate-200 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-5xl overflow-hidden rounded-4xl border border-slate-100 bg-white shadow-2xl ring-1 ring-white/60 backdrop-blur">
         <header className="flex flex-col gap-4 border-b border-slate-100 px-8 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-12">
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-blue-600/80">
@@ -78,7 +78,7 @@ function App() {
           <section className="w-full px-8 py-10 lg:w-1/2 lg:px-12 lg:py-14">
             <ActivePage />
           </section>
-          <aside className="flex w-full flex-col justify-between gap-10 bg-gradient-to-tr from-blue-50 via-white to-indigo-100 px-8 py-10 lg:w-1/2 lg:px-12 lg:py-14">
+          <aside className="flex w-full flex-col justify-between gap-10 bg-linear-to-tr from-blue-50 via-white to-indigo-100 px-8 py-10 lg:w-1/2 lg:px-12 lg:py-14">
             {isRegister ? (
               <div className="space-y-6">
                 <h2 className="text-2xl font-semibold uppercase tracking-wide text-slate-900">

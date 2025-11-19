@@ -73,6 +73,7 @@ function PopupForm({
   initialValues,
   submitLabel,
   onClose,
+  onSubmit,
 }) {
   const normalizedFields = useMemo(
     () => fields.map((field) => normalizeField(field)),
@@ -102,24 +103,31 @@ function PopupForm({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (onSubmit) {
+      setStatus({ state: "submitting" });
+      try {
+        await onSubmit(formValues);
+        setStatus({ state: "success" });
+        onClose?.();
+      } catch (error) {
+        setStatus({ state: "error", message: error.message });
+      }
+      return;
+    }
     if (!endpoint) return;
     setStatus({ state: "submitting" });
-
     try {
       const response = await fetch(endpoint, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formValues),
       });
-
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
       }
-
       const payload = await response
         .json()
         .catch(() => ({ ok: true, message: "No JSON response body." }));
-
       setStatus({ state: "success" });
       console.info("PopupForm success:", payload);
       onClose?.();

@@ -1,4 +1,37 @@
-// these data will make the life esasier because it is like the server responess
+// Dashboard club info stats for each club
+export const ClubsInfo = {
+  "Computer Club": {
+    "UPCOMING EVENTS": 14,
+    "EVENT ATTENDANCE (30D)": 2430,
+    "NEW REGISTRATIONS": 487,
+  },
+  // Add more clubs here as needed
+};
+
+// User management page users
+export const userManagementUsers = [
+  {
+    name: "Sara Al-Otaibi",
+    email: "s.otaibi@kfupm.edu.sa",
+    role: "Club President",
+    joined: "Jun 2022",
+    initials: "SA",
+  },
+  {
+    name: "Mohammed Al-Qahtani",
+    email: "m.qahtani@kfupm.edu.sa",
+    role: "Student",
+    joined: "Jan 2023",
+    initials: "MA",
+  },
+  {
+    name: "Abdullah Al-Harbi",
+    email: "abdullah.harbi@kfupm.edu.sa",
+    role: "Student",
+    joined: "Sep 2021",
+    initials: "AA",
+  },
+];
 
 export const adminStatistics = [
   { label: "Total Clubs", value: "24" },

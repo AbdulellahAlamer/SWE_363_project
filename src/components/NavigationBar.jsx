@@ -64,9 +64,9 @@ function NavigationBar({
           className="p-2 rounded-md hover:bg-gray-100 transition"
         >
           {/* simple three-line hamburger */}
-          <span className="block w-5 h-[2px] bg-gray-600 mb-1 rotate-0 transition-transform" />
-          <span className="block w-5 h-[2px] bg-gray-600 mb-1 transition-transform" />
-          <span className="block w-5 h-[2px] bg-gray-600 transition-transform" />
+          <span className="block w-5 h-0.5 bg-gray-600 mb-1 rotate-0 transition-transform" />
+          <span className="block w-5 h-0.5 bg-gray-600 mb-1 transition-transform" />
+          <span className="block w-5 h-0.5 bg-gray-600 transition-transform" />
         </button>
       </div>
 
