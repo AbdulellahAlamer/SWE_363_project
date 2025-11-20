@@ -43,7 +43,7 @@ export default function ClubsPage() {
     <div className="flex">
       <NavigationBar active="/clubs" type="student" />
 
-      <div className="ml-64 flex-1 min-h-screen bg-gray-50">
+        <div className="ml-0 md:ml-64 flex-1 min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto px-8 py-12 text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Discover Clubs</h1>
           <p className="text-lg text-gray-600">Join communities and connect with like-minded students</p>

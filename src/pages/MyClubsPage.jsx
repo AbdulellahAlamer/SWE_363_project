@@ -35,11 +35,10 @@ export default function MyClubsPage() {
     setClubs((prev) => prev.filter((c) => c.id !== id));
   };
 
-  return (
+    return (
     <div className="flex">
       <NavigationBar active="/my-clubs" type="student" />
-
-      <main className="ml-64 flex-1 min-h-screen bg-gradient-to-b from-slate-50 to-white p-8">
+      <main className="ml-0 md:ml-64 flex-1 ...">
         <div className="max-w-6xl mx-auto">
           <header className="flex items-center justify-between mb-8">
             <div>

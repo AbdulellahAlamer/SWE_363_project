@@ -9,9 +9,11 @@ function NavigationBar({
   const [open, setOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Make positioning/width responsive so mobile layout isn't affected.
+  // Use md:fixed/md:left/md:top/md:h-full so "fixed" only applies on md+ screens.
   const containerClasses = `${
-    fixed ? "fixed left-0 top-0 h-full" : "relative"
-  } ${open ? "w-64" : "w-20"} bg-white text-gray-700 p-4 flex-col transition-all duration-200 hidden md:flex`;
+    fixed ? "md:fixed md:left-0 md:top-0 md:h-full" : "relative"
+  } ${open ? "md:w-64" : "md:w-20"} bg-white text-gray-700 p-4 flex-col transition-all duration-200 hidden md:flex`;
 
   const linkClass = (href, collapsed = !open) => {
     const base = "p-3 rounded-lg transition-colors flex items-center gap-3";
