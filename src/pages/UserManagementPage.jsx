@@ -80,7 +80,7 @@ export default function UserManagementPage() {
     <div className="flex min-h-screen bg-slate-50">
       <NavigationBar active="/user-management" type="admin" />
 
-      <main className="ml-64 flex-1 space-y-6 p-8">
+      <main className="ml-0 md:ml-64 flex-1 space-y-6 p-8">
         <header className="flex items-center justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">

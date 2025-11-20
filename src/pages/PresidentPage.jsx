@@ -108,10 +108,9 @@ export default function PresidentPage() {
   return (
     <div className="min-h-screen bg-[#f5f7fe]">
       <NavigationBar active="/president" type="president" />
-      <main
-        className="px-8 py-6 max-w-[1600px] mx-auto"
-        style={{ paddingLeft: 272 }}
-      >
+
+      {/* changed: remove fixed inline padding, use responsive margin so mobile header/drawer works */}
+      <main className="px-4 md:px-8 py-6 max-w-[1600px] mx-auto ml-0 md:ml-64 pt-16 md:pt-6">
         {/* Club Header */}
         <div className="flex items-center justify-between bg-[#e9f0ff] rounded-2xl shadow p-8 mb-8">
           <div className="flex items-center gap-6">
