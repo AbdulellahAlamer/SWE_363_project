@@ -1,6 +1,9 @@
 import { useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
-import AttendedEvents, { profileJoinedClubs, certificates } from "../assets/data.js";
+import AttendedEvents, {
+  profileJoinedClubs,
+  certificates,
+} from "../assets/data.js";
 
 export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
@@ -78,12 +81,9 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Hide navigation on mobile, show on larger screens */}
-      <div className="hidden md:block">
-        <NavigationBar active="/my-profile" />
-      </div>
+      <NavigationBar active="/my-profile" />
 
-      <div className="w-full md:ml-64 flex-1 p-4 sm:p-6 lg:p-10">
+      <div className="w-full flex-1 pt-16 md:pt-0 md:ml-64 p-4 sm:p-6 lg:p-10">
         {/* Profile Header - Mobile Responsive */}
         <div className="mb-6 sm:mb-8 rounded-2xl bg-gradient-to-r from-slate-200 to-slate-300 p-4 sm:p-6 lg:p-8 shadow-lg relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
@@ -147,7 +147,9 @@ export default function ProfilePage() {
         {/* Joined Clubs Section - Mobile Responsive */}
         <div className="mb-8 sm:mb-10">
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Joined Clubs</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+              Joined Clubs
+            </h2>
             <span className="text-xs sm:text-sm text-blue-600 font-medium">
               {profileJoinedClubs?.length || 0} clubs
             </span>
@@ -189,7 +191,9 @@ export default function ProfilePage() {
                     />
                   </svg>
                 </div>
-                <p className="text-slate-500 text-xs sm:text-sm">No clubs joined yet</p>
+                <p className="text-slate-500 text-xs sm:text-sm">
+                  No clubs joined yet
+                </p>
                 <p className="text-slate-400 text-xs mt-1">
                   Join clubs to see them here
                 </p>
@@ -201,7 +205,9 @@ export default function ProfilePage() {
         {/* Certificates Section - Mobile Responsive */}
         <div>
           <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900">Certificates</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+              Certificates
+            </h2>
             <button
               onClick={handleDownloadAll}
               className="text-xs sm:text-sm text-blue-600 font-medium hover:underline"

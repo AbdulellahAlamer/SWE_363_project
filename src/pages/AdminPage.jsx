@@ -31,6 +31,8 @@ export default function AdminPage() {
   const [presClub, setPresClub] = useState("");
   const [presPassword, setPresPassword] = useState("");
 
+  console.log(logoFile);
+
   useEffect(() => {
     // revoke object URL on unmount or when logoFile changes
     return () => {
@@ -193,7 +195,8 @@ export default function AdminPage() {
 
         <SectionCard className="mx-2 md:mx-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
-            Draft the club profile, assign the leadership team, and publish when you are ready for students to subscribe.
+            Draft the club profile, assign the leadership team, and publish when
+            you are ready for students to subscribe.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <FormField label="Club Name">
@@ -252,21 +255,32 @@ export default function AdminPage() {
             </FormField>
           </div>
           <FormField label="Logo Upload" className="mb-6">
-            <LogoUpload logoPreview={logoPreview} setLogoPreview={setLogoPreview} setLogoFile={setLogoFile} />
+            <LogoUpload
+              logoPreview={logoPreview}
+              setLogoPreview={setLogoPreview}
+              setLogoFile={setLogoFile}
+            />
           </FormField>
           <ButtonGroup
-            buttons={[{
-              label: "Reset",
-              onClick: resetForm,
-              className: "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-            }, {
-              label: "Save Draft",
-              className: "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-            }, {
-              label: "Publish Club",
-              onClick: publishClub,
-              className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            }]}
+            buttons={[
+              {
+                label: "Reset",
+                onClick: resetForm,
+                className:
+                  "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg",
+              },
+              {
+                label: "Save Draft",
+                className:
+                  "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
+              },
+              {
+                label: "Publish Club",
+                onClick: publishClub,
+                className:
+                  "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
+              },
+            ]}
           />
         </SectionCard>
 
@@ -280,7 +294,9 @@ export default function AdminPage() {
 
         <SectionCard className="mx-2 md:mx-8 mb-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
-            Invite a new club leader by creating their account, assigning them to a club, and triggering an onboarding email with temporary credentials.
+            Invite a new club leader by creating their account, assigning them
+            to a club, and triggering an onboarding email with temporary
+            credentials.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <FormField label="Full Name">
@@ -289,7 +305,7 @@ export default function AdminPage() {
                 placeholder="e.g., Latifah Al-Dossary"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presFullName}
-                onChange={e => setPresFullName(e.target.value)}
+                onChange={(e) => setPresFullName(e.target.value)}
               />
             </FormField>
             <FormField label="KFUPM ID">
@@ -298,7 +314,7 @@ export default function AdminPage() {
                 placeholder="Student/Staff ID"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presId}
-                onChange={e => setPresId(e.target.value)}
+                onChange={(e) => setPresId(e.target.value)}
               />
             </FormField>
             <FormField label="University Email">
@@ -307,7 +323,7 @@ export default function AdminPage() {
                 placeholder="username@kfupm.edu.sa"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presEmail}
-                onChange={e => setPresEmail(e.target.value)}
+                onChange={(e) => setPresEmail(e.target.value)}
               />
             </FormField>
           </div>
@@ -318,7 +334,7 @@ export default function AdminPage() {
                 placeholder="05X-XXX-XXXX"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presPhone}
-                onChange={e => setPresPhone(e.target.value)}
+                onChange={(e) => setPresPhone(e.target.value)}
               />
             </FormField>
             <FormField label="Role Start Date">
@@ -326,18 +342,20 @@ export default function AdminPage() {
                 type="date"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presStartDate}
-                onChange={e => setPresStartDate(e.target.value)}
+                onChange={(e) => setPresStartDate(e.target.value)}
               />
             </FormField>
             <FormField label="Assign Club">
               <select
                 className="px-4 py-2 border rounded-lg w-full bg-white"
                 value={presClub}
-                onChange={e => setPresClub(e.target.value)}
+                onChange={(e) => setPresClub(e.target.value)}
               >
                 <option value="">Select existing club</option>
-                {clubs.map(club => (
-                  <option key={club.id} value={club.name}>{club.name}</option>
+                {clubs.map((club) => (
+                  <option key={club.id} value={club.name}>
+                    {club.name}
+                  </option>
                 ))}
               </select>
             </FormField>
@@ -357,10 +375,17 @@ export default function AdminPage() {
                   className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                   onClick={() => {
                     // Generate a random password: 10-12 chars, mix of upper/lower/number/symbol
-                    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
+                    const chars =
+                      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
                     let pwd = "";
-                    for (let i = 0; i < 10 + Math.floor(Math.random() * 3); i++) {
-                      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+                    for (
+                      let i = 0;
+                      i < 10 + Math.floor(Math.random() * 3);
+                      i++
+                    ) {
+                      pwd += chars.charAt(
+                        Math.floor(Math.random() * chars.length)
+                      );
                     }
                     setPresPassword(pwd);
                   }}
@@ -371,41 +396,63 @@ export default function AdminPage() {
             </FormField>
           </div>
           <div className="text-sm text-gray-500 mb-6">
-            Share only through official KFUPM channels. The leader will be prompted to reset on first login.
+            Share only through official KFUPM channels. The leader will be
+            prompted to reset on first login.
           </div>
           <ButtonGroup
-            buttons={[{
-              label: "Clear",
-              onClick: () => {
-                setPresFullName(""); setPresId(""); setPresEmail(""); setPresPhone(""); setPresStartDate(""); setPresClub(""); setPresPassword("");
+            buttons={[
+              {
+                label: "Clear",
+                onClick: () => {
+                  setPresFullName("");
+                  setPresId("");
+                  setPresEmail("");
+                  setPresPhone("");
+                  setPresStartDate("");
+                  setPresClub("");
+                  setPresPassword("");
+                },
+                className:
+                  "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg",
               },
-              className: "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-            }, {
-              label: "Save Draft",
-              className: "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-            }, {
-              label: "Send Invite",
-              className: "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
-              onClick: () => {
-                // Validation
-                if (!presEmail.endsWith("@kfupm.edu.sa")) {
-                  window.alert("❌ University email must end with @kfupm.edu.sa.\nExample: username@kfupm.edu.sa");
-                  return;
-                }
-                if (!/^05\d{8}$/.test(presPhone)) {
-                  window.alert("❌ Phone number must be 10 digits, start with 05, and match the format: 05X-XXX-XXXX");
-                  return;
-                }
-                if (!presClub) {
-                  window.alert("❌ Please select a club from the list.");
-                  return;
-                }
-                // You can add more validation as needed
-                window.alert(
-                  `✅ Invitation sent!\n\nAccount for ${presFullName || "(No Name)"} has been created.\nA temporary password will be sent to: ${presEmail}\nAssigned club: ${presClub}\nPhone: ${presPhone}\nStart Date: ${presStartDate || "(Not set)"}`
-                );
-              }
-            }]}
+              {
+                label: "Save Draft",
+                className:
+                  "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
+              },
+              {
+                label: "Send Invite",
+                className:
+                  "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
+                onClick: () => {
+                  // Validation
+                  if (!presEmail.endsWith("@kfupm.edu.sa")) {
+                    window.alert(
+                      "❌ University email must end with @kfupm.edu.sa.\nExample: username@kfupm.edu.sa"
+                    );
+                    return;
+                  }
+                  if (!/^05\d{8}$/.test(presPhone)) {
+                    window.alert(
+                      "❌ Phone number must be 10 digits, start with 05, and match the format: 05X-XXX-XXXX"
+                    );
+                    return;
+                  }
+                  if (!presClub) {
+                    window.alert("❌ Please select a club from the list.");
+                    return;
+                  }
+                  // You can add more validation as needed
+                  window.alert(
+                    `✅ Invitation sent!\n\nAccount for ${
+                      presFullName || "(No Name)"
+                    } has been created.\nA temporary password will be sent to: ${presEmail}\nAssigned club: ${presClub}\nPhone: ${presPhone}\nStart Date: ${
+                      presStartDate || "(Not set)"
+                    }`
+                  );
+                },
+              },
+            ]}
           />
         </SectionCard>
       </div>

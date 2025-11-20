@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function StatCard({ label, value }) {
   return (
     <div className="rounded-xl bg-white p-4 sm:p-6 shadow-md ring-1 ring-white/60 text-center">

@@ -3,9 +3,9 @@ import NavigationBar from "../components/NavigationBar";
 import PostCard from "../components/PostCard";
 import PopupForm from "../components/PopupForm";
 
-// 1. **IMPORT THE IMAGE:** // Use a relative path from PostsPage.jsx (in src/pages) 
+// 1. **IMPORT THE IMAGE:** // Use a relative path from PostsPage.jsx (in src/pages)
 // back to src/assets/images/funny.png
-import funnyImage from "../assets/images/funny.png"; 
+import funnyImage from "../assets/images/funny.png";
 
 /* Mock posts — replace with real data / API later */
 const SAMPLE_POSTS = [
@@ -15,13 +15,11 @@ const SAMPLE_POSTS = [
     clubName: "Computer Club",
     timeAgo: "Posted 2h ago",
     title: "Hack the Future Winners",
-    body:
-      "Congratulations to Team Catalyst for securing first place in the smart-campus track! Their AI powered energy dashboard impressed the judges.",
+    body: "Congratulations to Team Catalyst for securing first place in the smart-campus track! Their AI powered energy dashboard impressed the judges.",
     // 2. **USE THE IMPORTED VARIABLE:**
-    imageUrl: funnyImage, 
+    imageUrl: funnyImage,
     tag: "Event Recap",
     likes: 86,
-    comments: 24,
   },
   {
     id: "post-002",
@@ -29,13 +27,11 @@ const SAMPLE_POSTS = [
     clubName: "ISE Club",
     timeAgo: "Posted yesterday",
     title: "Lean Workshop Materials",
-    body:
-      "Slides and templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
+    body: "Slides and templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
     // 3. **USE THE IMPORTED VARIABLE AGAIN:**
-    imageUrl: funnyImage, 
+    imageUrl: funnyImage,
     tag: "Resources",
     likes: 42,
-    comments: 13,
   },
   {
     id: "post-003",
@@ -43,21 +39,19 @@ const SAMPLE_POSTS = [
     clubName: "Mechanical Engineers Club",
     timeAgo: "Posted Mar 21",
     title: "Formula Student Build Update",
-    body:
-      "Chassis welding is complete! Join us this Friday for suspension assembly and testing at the workshop.",
+    body: "Chassis welding is complete! Join us this Friday for suspension assembly and testing at the workshop.",
     imageUrl: null,
     tag: "Project Update",
     likes: 64,
-    comments: 18,
   },
 ];
 
 export default function PostsPage() {
-// ... (rest of the component code remains the same)
+  // ... (rest of the component code remains the same)
 
-// ... (handleEdit and closePopup functions)
+  // ... (handleEdit and closePopup functions)
 
-  const [posts, setPosts] = useState(SAMPLE_POSTS);
+  const posts = SAMPLE_POSTS;
   const [editingPost, setEditingPost] = useState(null);
 
   const handleEdit = (postId) => {

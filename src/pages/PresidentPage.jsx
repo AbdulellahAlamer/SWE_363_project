@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import QRCode from "react-qr-code";
 import { useRef } from "react";
@@ -7,14 +6,17 @@ import Button from "../components/Button.jsx";
 import SectionCard from "../components/SectionCard.jsx";
 import PostCard from "../components/PostCard.jsx";
 import EventCard from "../components/EventCardProf.jsx";
+import PopupForm from "../components/PopupForm.jsx";
 import { sampleEvents, adminClubSeeds, ClubsInfo } from "../assets/data.js";
 
 const club = adminClubSeeds[0];
-const stats = Object.entries(ClubsInfo[club.name] || {}).map(([label, value]) => ({
-  label,
-  value,
-}));
-const posts = [
+const stats = Object.entries(ClubsInfo[club.name] || {}).map(
+  ([label, value]) => ({
+    label,
+    value,
+  })
+);
+const initialPosts = [
   {
     id: 1,
     clubInitials: "ISE",
@@ -25,7 +27,6 @@ const posts = [
     imageUrl: "",
     tag: "RESOURCES",
     likes: 42,
-    comments: 13,
   },
   {
     id: 2,
@@ -37,7 +38,6 @@ const posts = [
     imageUrl: "",
     tag: "RESOURCES",
     likes: 42,
-    comments: 13,
   },
   {
     id: 3,
@@ -49,7 +49,6 @@ const posts = [
     imageUrl: "",
     tag: "RESOURCES",
     likes: 42,
-    comments: 13,
   },
 ];
 
@@ -60,32 +59,43 @@ export default function PresidentPage() {
   const [events, setEvents] = useState([...sampleEvents]);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "" });
+  const [posts, setPosts] = useState(initialPosts);
+  const [editingPost, setEditingPost] = useState(null);
   const qrRef = useRef(null);
+
+  const handlePostEdit = (postId) => {
+    const post = posts.find((p) => p.id === postId);
+    setEditingPost(post || null);
+  };
+
+  const closePostEditor = () => setEditingPost(null);
 
   // Download QR as PNG
   const handleDownloadQR = () => {
-    const svg = qrRef.current?.querySelector('svg');
+    const svg = qrRef.current?.querySelector("svg");
     if (!svg) return;
     const serializer = new XMLSerializer();
     const svgString = serializer.serializeToString(svg);
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     const img = new window.Image();
     const size = 140;
     canvas.width = size;
     canvas.height = size;
     img.onload = function () {
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, size, size);
       ctx.drawImage(img, 0, 0, size, size);
-      const pngUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
+      const pngUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
       link.href = pngUrl;
-      link.download = 'qr-code.png';
+      link.download = "qr-code.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     };
-    img.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svgString)));
+    img.src =
+      "data:image/svg+xml;base64," +
+      window.btoa(unescape(encodeURIComponent(svgString)));
   };
 
   // Copy QR value as link (or text)
@@ -98,7 +108,10 @@ export default function PresidentPage() {
   return (
     <div className="min-h-screen bg-[#f5f7fe]">
       <NavigationBar active="/president" type="president" />
-      <main className="px-8 py-6 max-w-[1600px] mx-auto" style={{ paddingLeft: 272 }}>
+      <main
+        className="px-8 py-6 max-w-[1600px] mx-auto"
+        style={{ paddingLeft: 272 }}
+      >
         {/* Club Header */}
         <div className="flex items-center justify-between bg-[#e9f0ff] rounded-2xl shadow p-8 mb-8">
           <div className="flex items-center gap-6">
@@ -106,22 +119,33 @@ export default function PresidentPage() {
               {club.initials}
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-slate-900 mb-1">{club.name}</h1>
+              <h1 className="text-4xl font-bold text-slate-900 mb-1">
+                {club.name}
+              </h1>
               <div className="text-slate-500 text-lg">President Dashboard</div>
             </div>
           </div>
           <div className="flex gap-4">
-            <Button className="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold">Create Event</Button>
-            <Button className="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold">Create Post</Button>
+            <Button className="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold">
+              Create Event
+            </Button>
+            <Button className="bg-blue-600 text-white px-6 py-2 rounded-xl font-semibold">
+              Create Post
+            </Button>
           </div>
         </div>
 
         {/* Stats */}
         <div className="flex gap-8 mb-10">
           {stats.map((stat, i) => (
-            <div key={i} className="flex-1 bg-[#e9f0ff] rounded-2xl shadow p-6 flex flex-col items-center">
+            <div
+              key={i}
+              className="flex-1 bg-[#e9f0ff] rounded-2xl shadow p-6 flex flex-col items-center"
+            >
               <div className="text-xs text-slate-500 mb-2">{stat.label}</div>
-              <div className="text-3xl font-bold text-slate-900">{stat.value}</div>
+              <div className="text-3xl font-bold text-slate-900">
+                {stat.value}
+              </div>
             </div>
           ))}
         </div>
@@ -129,8 +153,15 @@ export default function PresidentPage() {
         {/* Attendance Check-In */}
         <div className="mb-12">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold text-slate-900">Attendance Check-In</h2>
-            <a href="#" className="text-blue-600 text-sm font-medium hover:underline">Generate a QR for live scans</a>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Attendance Check-In
+            </h2>
+            <a
+              href="#"
+              className="text-blue-600 text-sm font-medium hover:underline"
+            >
+              Generate a QR for live scans
+            </a>
           </div>
           <SectionCard className="flex gap-8 items-center">
             <div className="flex-1">
@@ -139,19 +170,29 @@ export default function PresidentPage() {
                 <select
                   className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                   value={selectedEvent}
-                  onChange={e => setSelectedEvent(e.target.value)}
+                  onChange={(e) => setSelectedEvent(e.target.value)}
                 >
-                  {sampleEvents.map(ev => (
-                    <option key={ev.id} value={ev.id}>{ev.title} @ {new Date(ev.date).toLocaleString('en-US', { month: 'short', day: 'numeric' })}</option>
+                  {sampleEvents.map((ev) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title} @{" "}
+                      {new Date(ev.date).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </option>
                   ))}
                 </select>
               </div>
               <Button
                 className="w-full bg-blue-600 text-white"
                 onClick={() => {
-                  const event = sampleEvents.find(ev => ev.id === selectedEvent);
+                  const event = sampleEvents.find(
+                    (ev) => ev.id === selectedEvent
+                  );
                   const value = event
-                    ? `Event: ${event.title}\nDate: ${new Date(event.date).toLocaleString()}\nClub: ${event.host}`
+                    ? `Event: ${event.title}\nDate: ${new Date(
+                        event.date
+                      ).toLocaleString()}\nClub: ${event.host}`
                     : "";
                   setQrValue(value);
                   setQrGenerated(true);
@@ -166,12 +207,19 @@ export default function PresidentPage() {
                 ref={qrRef}
               >
                 {qrGenerated && qrValue ? (
-                  <QRCode value={qrValue} size={140} style={{ width: 140, height: 140 }} />
+                  <QRCode
+                    value={qrValue}
+                    size={140}
+                    style={{ width: 140, height: 140 }}
+                  />
                 ) : (
                   <span className="text-2xl text-blue-400 font-bold">QR</span>
                 )}
               </div>
-              <div className="text-xs text-slate-500 text-center mb-2">Display this code at the venue. Students can scan using the KFUPM Clubs app to check in.</div>
+              <div className="text-xs text-slate-500 text-center mb-2">
+                Display this code at the venue. Students can scan using the
+                KFUPM Clubs app to check in.
+              </div>
               <div className="flex gap-4">
                 <Button
                   variant="outline"
@@ -196,31 +244,53 @@ export default function PresidentPage() {
 
         {/* Manage Events */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Manage Events</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            Manage Events
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {events.slice(0, 3).map(ev => (
-              <div key={ev.id} className="flex flex-col bg-white rounded-2xl shadow p-6">
+            {events.slice(0, 3).map((ev) => (
+              <div
+                key={ev.id}
+                className="flex flex-col bg-white rounded-2xl shadow p-6"
+              >
                 <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
                 {editingId === ev.id ? (
                   <>
                     <input
                       className="text-lg font-semibold text-slate-900 mb-1 border rounded p-1 mb-2"
                       value={editForm.title}
-                      onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, title: e.target.value }))
+                      }
                     />
                     <textarea
                       className="text-slate-500 text-sm mb-2 border rounded p-1"
                       value={editForm.description}
-                      onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          description: e.target.value,
+                        }))
+                      }
                     />
                   </>
                 ) : (
                   <>
-                    <div className="text-lg font-semibold text-slate-900 mb-1">{ev.title}</div>
-                    <div className="text-slate-500 text-sm mb-2">{ev.description}</div>
+                    <div className="text-lg font-semibold text-slate-900 mb-1">
+                      {ev.title}
+                    </div>
+                    <div className="text-slate-500 text-sm mb-2">
+                      {ev.description}
+                    </div>
                   </>
                 )}
-                <div className="text-xs text-slate-400 mb-2">{new Date(ev.date).toLocaleString('en-US', { month: 'short', day: 'numeric' })} · {ev.registered} registered</div>
+                <div className="text-xs text-slate-400 mb-2">
+                  {new Date(ev.date).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · {ev.registered} registered
+                </div>
                 <div className="flex gap-2 mb-2">
                   {editingId === ev.id ? (
                     <>
@@ -228,7 +298,11 @@ export default function PresidentPage() {
                         variant="secondary"
                         className="w-1/2"
                         onClick={() => {
-                          setEvents(events.map(e => e.id === ev.id ? { ...e, ...editForm } : e));
+                          setEvents(
+                            events.map((e) =>
+                              e.id === ev.id ? { ...e, ...editForm } : e
+                            )
+                          );
                           setEditingId(null);
                         }}
                       >
@@ -249,7 +323,10 @@ export default function PresidentPage() {
                         className="w-1/2"
                         onClick={() => {
                           setEditingId(ev.id);
-                          setEditForm({ title: ev.title, description: ev.description });
+                          setEditForm({
+                            title: ev.title,
+                            description: ev.description,
+                          });
                         }}
                       >
                         Edit
@@ -257,7 +334,9 @@ export default function PresidentPage() {
                       <Button
                         variant="outline"
                         className="w-1/2 text-red-600 border-red-200"
-                        onClick={() => setEvents(events.filter(e => e.id !== ev.id))}
+                        onClick={() =>
+                          setEvents(events.filter((e) => e.id !== ev.id))
+                        }
                       >
                         Delete
                       </Button>
@@ -269,7 +348,7 @@ export default function PresidentPage() {
                   className="w-full border border-blue-200 text-blue-600"
                   onClick={() => alert("joined students will be notified")}
                 >
-                  Notify
+                  Notify By email
                 </Button>
               </div>
             ))}
@@ -278,14 +357,45 @@ export default function PresidentPage() {
 
         {/* Manage Posts */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Manage Posts</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">
+            Manage Posts
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {posts.map(post => (
-              <PostCard key={post.id} post={post} />
+            {posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                type="president"
+                onEdit={handlePostEdit}
+              />
             ))}
           </div>
         </div>
       </main>
+      {editingPost && (
+        <PopupForm
+          method="PUT"
+          submitLabel="Save Changes"
+          fields={[
+            { name: "title", label: "Title", dataType: "string" },
+            { name: "body", label: "Body", dataType: "text" },
+            { name: "tag", label: "Tag", dataType: "string" },
+          ]}
+          initialValues={{
+            title: editingPost.title,
+            body: editingPost.body,
+            tag: editingPost.tag,
+          }}
+          onClose={closePostEditor}
+          onSubmit={(values) => {
+            setPosts((prev) =>
+              prev.map((post) =>
+                post.id === editingPost.id ? { ...post, ...values } : post
+              )
+            );
+          }}
+        />
+      )}
     </div>
   );
 }

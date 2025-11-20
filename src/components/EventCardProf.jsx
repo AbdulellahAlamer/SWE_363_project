@@ -1,4 +1,3 @@
-import React from "react";
 import Button from "./Button.jsx";
 
 export default function EventCard({ event }) {
@@ -8,7 +7,10 @@ export default function EventCard({ event }) {
 
       <div className="mb-3">
         <span className="inline-block text-xs font-semibold px-2 py-1 rounded-full bg-blue-50 text-blue-700">
-          {event.type} · {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
+          {event.type} ·{" "}
+          {new Date(event.date)
+            .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            .toUpperCase()}
         </span>
       </div>
 
@@ -20,8 +22,12 @@ export default function EventCard({ event }) {
       </p>
 
       <div className="text-xs text-slate-500 mb-3 sm:mb-4">
-        <div className="uppercase tracking-wide text-[10px] sm:text-[11px]">Hosted by</div>
-        <div className="font-medium text-slate-800 text-xs sm:text-sm">{event.host}</div>
+        <div className="uppercase tracking-wide text-[10px] sm:text-[11px]">
+          Hosted by
+        </div>
+        <div className="font-medium text-slate-800 text-xs sm:text-sm">
+          {event.host}
+        </div>
       </div>
 
       <Button

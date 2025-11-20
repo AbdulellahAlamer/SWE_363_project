@@ -22,42 +22,51 @@ export default function EventsPage() {
   const normalized = (sampleEvents || []).map((e) => ({
     ...e,
     description: e.desc || e.description || "",
-    dateLabel: e.dateLabel || (e.date ? new Date(e.date).toLocaleString(undefined, { month: "short", day: "numeric" }).toUpperCase() : ""),
+    dateLabel:
+      e.dateLabel ||
+      (e.date
+        ? new Date(e.date)
+            .toLocaleString(undefined, { month: "short", day: "numeric" })
+            .toUpperCase()
+        : ""),
     uiStatus: normalizeStatus(e.status),
   }));
 
-  const filtered = normalized.filter((e) => (filter === "all" ? true : e.uiStatus === filter));
+  const filtered = normalized.filter((e) =>
+    filter === "all" ? true : e.uiStatus === filter
+  );
 
-  const upcomingCount = normalized.filter((e) => e.uiStatus === "upcoming").length;
+  const upcomingCount = normalized.filter(
+    (e) => e.uiStatus === "upcoming"
+  ).length;
   const pastCount = normalized.filter((e) => e.uiStatus === "past").length;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Hide navigation on mobile, show on larger screens */}
-      <div className="hidden md:block">
-        <NavigationBar active="/events" />
-      </div>
+      <NavigationBar active="/events" />
 
-      <div className="w-full md:ml-64 flex-1 p-4 sm:p-6 lg:p-10">
+      <div className="w-full flex-1 pt-16 md:pt-0 md:ml-64 p-4 sm:p-6 lg:p-10">
         {/* Header Section - Mobile Responsive */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Events</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+            Events
+          </h1>
 
           <div className="flex items-center gap-2 sm:gap-3 bg-white/60 rounded-full p-1 shadow-sm w-full sm:w-auto">
-            <FilterButton 
-              label="Upcoming" 
-              active={filter === "upcoming"} 
-              onClick={() => setFilter("upcoming")} 
+            <FilterButton
+              label="Upcoming"
+              active={filter === "upcoming"}
+              onClick={() => setFilter("upcoming")}
             />
-            <FilterButton 
-              label="Past" 
-              active={filter === "past"} 
-              onClick={() => setFilter("past")} 
+            <FilterButton
+              label="Past"
+              active={filter === "past"}
+              onClick={() => setFilter("past")}
             />
-            <FilterButton 
-              label="All" 
-              active={filter === "all"} 
-              onClick={() => setFilter("all")} 
+            <FilterButton
+              label="All"
+              active={filter === "all"}
+              onClick={() => setFilter("all")}
             />
           </div>
         </div>
