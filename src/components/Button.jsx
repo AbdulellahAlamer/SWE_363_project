@@ -1,5 +1,5 @@
 const BASE_CLASSES =
-  "inline-flex items-center justify-center gap-2 rounded-xl border border-transparent px-5 py-2.5 font-semibold text-[0.95rem] text-slate-900 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-xl border border-transparent px-4 sm:px-5 py-2 sm:py-2.5 font-semibold text-sm sm:text-[0.95rem] transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60";
 
 const VARIANT_CLASSNAMES = {
   primary: "bg-blue-600 text-white border-blue-600 hover:bg-blue-700",

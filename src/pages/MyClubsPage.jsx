@@ -6,7 +6,9 @@ import { adminClubSeeds, profileJoinedClubs } from "../assets/data";
 
 export default function MyClubsPage() {
   const joinedNames = profileJoinedClubs.map((j) => j.name);
-  const initialClubs = adminClubSeeds.filter((c) => joinedNames.includes(c.name));
+  const initialClubs = adminClubSeeds.filter((c) =>
+    joinedNames.includes(c.name)
+  );
 
   // include any joined clubs not present in adminClubSeeds as minimal records
   const missing = joinedNames
@@ -35,20 +37,14 @@ export default function MyClubsPage() {
     setClubs((prev) => prev.filter((c) => c.id !== id));
   };
 
-    return (
+  return (
     <div className="flex">
       <NavigationBar active="/my-clubs" type="student" />
-      <main className="ml-0 md:ml-64 flex-1 ...">
+      <main className="ml-0 md:ml-64 flex-1 mt-16">
         <div className="max-w-6xl mx-auto">
-          <header className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Joined Clubs</h1>
-              <p className="text-sm text-slate-500 mt-1">{clubs.length} clubs</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Button variant="secondary">Manage memberships</Button>
-            </div>
+          <header className="flex items-center justify-between mb-8 px-8">
+            <h1 className="text-3xl font-bold text-slate-900">Joined Clubs</h1>
+            <p className="text-sm text-slate-500 mt-1">{clubs.length} clubs</p>
           </header>
 
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -65,7 +61,9 @@ export default function MyClubsPage() {
                   </div>
 
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold text-slate-900">{club.name}</h2>
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      {club.name}
+                    </h2>
                     <div className="text-sm text-slate-500 mt-1">
                       {club.category} · {club.members} members
                     </div>
@@ -76,7 +74,7 @@ export default function MyClubsPage() {
                   </div>
                 </div>
 
-                                <div className="mt-4 flex items-center gap-3">
+                <div className="mt-4 flex items-center gap-3">
                   <a
                     href={`/club-profile?club=${encodeURIComponent(club.id)}`}
                     className="flex-1"
@@ -95,7 +93,6 @@ export default function MyClubsPage() {
                     Unsubscribe
                   </Button>
                 </div>
-
               </article>
             ))}
           </section>

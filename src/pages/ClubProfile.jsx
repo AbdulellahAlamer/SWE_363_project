@@ -7,12 +7,12 @@ import { sampleEvents, adminClubSeeds } from "../assets/data.js";
 
 export default function ClubProfile({ club }) {
   // Find club data from adminClubSeeds or use default
-  const defaultClub = adminClubSeeds.find(c => c.id === "club-cs") || {
+  const defaultClub = adminClubSeeds.find((c) => c.id === "club-cs") || {
     name: "Computer Club",
     initials: "CS",
     category: "Technology & Innovation",
   };
-  
+
   const c = club || defaultClub;
 
   const [subscribed, setSubscribed] = useState(false);
@@ -25,11 +25,10 @@ export default function ClubProfile({ club }) {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Hide navigation on mobile, show on larger screens */}
-      <div className="hidden md:block">
-        <NavigationBar active="/clubs" />
-      </div>
 
-      <div className="w-full md:ml-64 flex-1 p-4 sm:p-6 lg:p-12">
+      <NavigationBar active="/clubs" />
+
+      <div className="w-full md:ml-64 flex-1 p-4 sm:p-6 lg:p-12 pt-16">
         {/* Club Header Card - Responsive */}
         <div className="mb-6 sm:mb-10 rounded-2xl bg-gradient-to-r from-sky-50 to-indigo-50/60 p-4 sm:p-6 shadow-lg backdrop-blur-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
@@ -55,8 +54,8 @@ export default function ClubProfile({ club }) {
                 {subscribed ? "Subscribed" : "Subscribe"}
               </Button>
 
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm"
               >
                 Share
@@ -64,6 +63,20 @@ export default function ClubProfile({ club }) {
             </div>
           </div>
         </div>
+        {/* Statistics Section - Responsive */}
+        {upcoming.length > 0 && (
+          <div className="mt-8 sm:mt-12 grid grid-cols-3 gap-3 sm:gap-6 my-8">
+            <StatCard label="Total Events" value={upcoming.length} />
+            <StatCard
+              label="Workshops"
+              value={upcoming.filter((e) => e.type === "Workshop").length}
+            />
+            <StatCard
+              label="Hackathons"
+              value={upcoming.filter((e) => e.type === "Hackathon").length}
+            />
+          </div>
+        )}
 
         {/* Section Header for Events */}
         <div className="mb-6 sm:mb-8 flex items-center justify-between">
@@ -87,21 +100,6 @@ export default function ClubProfile({ club }) {
             </p>
           )}
         </div>
-
-        {/* Statistics Section - Responsive */}
-        {upcoming.length > 0 && (
-          <div className="mt-8 sm:mt-12 grid grid-cols-3 gap-3 sm:gap-6">
-            <StatCard label="Total Events" value={upcoming.length} />
-            <StatCard 
-              label="Workshops" 
-              value={upcoming.filter(e => e.type === "Workshop").length} 
-            />
-            <StatCard 
-              label="Hackathons" 
-              value={upcoming.filter(e => e.type === "Hackathon").length} 
-            />
-          </div>
-        )}
       </div>
     </div>
   );

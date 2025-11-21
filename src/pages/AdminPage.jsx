@@ -113,17 +113,19 @@ export default function AdminPage() {
     onCancelEdit();
   };
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       <div className="md:fixed md:left-0 md:top-0 md:h-full z-10 w-full md:w-64">
         <NavigationBar active="/admin" type="admin" />
       </div>
-      <div className="flex-1 md:ml-64 w-full max-w-full">
-        <StatisticsNavbar stats={adminStatistics} />
-        <div className="mx-2 md:mx-8 mb-4 mt-4 md:mt-0">
+      <div className="flex-1 w-full max-w-full pt-16 md:pt-0 md:ml-64">
+        <div className="px-4 md:px-8">
+          <StatisticsNavbar stats={adminStatistics} />
+        </div>
+        <div className="px-4 md:px-8 mb-4 mt-4 md:mt-0">
           <h2 className="text-xl font-semibold">Club Catalog</h2>
         </div>
 
-        <div className="mx-2 md:mx-8 bg-white rounded-lg shadow-md p-2 md:p-6">
+        <div className="mx-4 md:mx-8 bg-white rounded-2xl shadow-md p-3 md:p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
               <input
@@ -189,11 +191,11 @@ export default function AdminPage() {
         </div>
 
         {/* Create New Club Section */}
-        <div className="mx-2 md:mx-8 mb-4 mt-8">
+        <div className="px-4 md:px-8 mb-4 mt-8">
           <h2 className="text-xl font-semibold">Create New Club</h2>
         </div>
 
-        <SectionCard className="mx-2 md:mx-8">
+        <SectionCard className="mx-4 md:mx-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
             Draft the club profile, assign the leadership team, and publish when
             you are ready for students to subscribe.
