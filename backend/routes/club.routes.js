@@ -1,5 +1,6 @@
-const express = require("express");
-const router = express.Router();
-const protectRoute = require("../middleware/protectRoute");
+import express from "express";
+import protectRoute from "../middleware/protectRoute.js";
 
-module.exports = router;
+const router = express.Router();
+
+export default router;

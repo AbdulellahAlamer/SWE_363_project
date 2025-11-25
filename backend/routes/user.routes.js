@@ -1,8 +1,8 @@
-const express = require("express");
-const router = express.Router();
-const getAllUsers = require("../controllers/user/getAllUsers");
+import express from "express";
+import getAllUsers from "../controllers/user/getAllUsers.js";
+import protectRoute from "../middleware/protectRoute.js";
 
-const protectRoute = require("../middleware/protectRoute");
+const router = express.Router();
 
 // All routes require authentication
 router.use(protectRoute);
@@ -10,4 +10,4 @@ router.use(protectRoute);
 // User routes
 router.get("/", getAllUsers); // GET /api/v1/users - Get all users (admin only)
 
-module.exports = router;
+export default router;

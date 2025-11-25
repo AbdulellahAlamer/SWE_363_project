@@ -1,15 +1,18 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const config = require("../config/config");
-const { connect } = require("../config/db");
-require("dotenv").config();
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { fileURLToPath } from "url";
+import config from "../config/config.js";
+import { connect } from "../config/db.js";
+import authRoutes from "../routes/auth.routes.js";
+import userRoutes from "../routes/user.routes.js";
+import protectRoute from "../middleware/protectRoute.js";
 
-// Import routes
-const authRoutes = require("../routes/auth.routes");
-const userRoutes = require("../routes/user.routes");
+dotenv.config();
 
 // Initialize app
 const app = express();
@@ -40,11 +43,7 @@ app.get("/", (req, res) => {
 
 // API Routes
 app.use(`${config.app.apiPrefix}/auth`, authRoutes);
-app.use(
-  `${config.app.apiPrefix}/users`,
-  require("../middleware/protectRoute"),
-  userRoutes
-);
+app.use(`${config.app.apiPrefix}/users`, protectRoute, userRoutes);
 
 
 
@@ -103,7 +102,6 @@ const startServer = async () => {
 
         try {
           // Close database connection
-          const mongoose = require("mongoose");
           await mongoose.connection.close();
           console.log("✅ Database connection closed");
         } catch (dbErr) {
@@ -135,8 +133,9 @@ const startServer = async () => {
 
 
 // Start the server if this file is run directly
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   startServer();
 }
 
-module.exports = app;
+export default app;

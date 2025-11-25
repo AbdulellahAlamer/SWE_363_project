@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
@@ -101,4 +101,4 @@ userSchema.index({ status: 1 });
 
 // Create and export the model
 const User = mongoose.models.User || mongoose.model("User", userSchema);
-module.exports = User;
+export default User;

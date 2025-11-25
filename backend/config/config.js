@@ -1,13 +1,19 @@
-// Load environment variables from the project's config.env file
-require("dotenv").config({
-  path: require("path").join(__dirname, "..", "config.env"),
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({
+  path: path.join(__dirname, "..", "config.env"),
 });
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";
 
 // Minimal defaults; override via environment variables when needed.
-module.exports = {
+const config = {
   app: {
     name: process.env.APP_NAME || "Node Template API",
     port: process.env.PORT || 5000,
@@ -38,3 +44,5 @@ module.exports = {
     },
   },
 };
+
+export default config;

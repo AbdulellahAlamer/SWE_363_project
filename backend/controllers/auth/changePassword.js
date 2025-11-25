@@ -1,7 +1,7 @@
-const User = require('../../models/user.js');
+import User from "../../models/user.js";
 
 // Change password controller
-module.exports = async (req, res, next) => {
+const changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword, confirmPassword } = req.body;
     
@@ -63,3 +63,5 @@ module.exports = async (req, res, next) => {
     next(error);
   }
 };
+
+export default changePassword;

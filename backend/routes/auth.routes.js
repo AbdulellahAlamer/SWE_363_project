@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import register from "../controllers/auth/register.js";
+import login from "../controllers/auth/login.js";
+import getCurrentUser from "../controllers/auth/getCurrentUser.js";
+import protectUser from "../middleware/protectUser.js";
+
 const router = express.Router();
-const register = require("../controllers/auth/register");
-const login = require("../controllers/auth/login");
-const getCurrentUser = require("../controllers/auth/getCurrentUser");
-const protectUser = require("../middleware/protectUser");
 
 // Public routes - no authentication required
 router.post("/register", register);
@@ -22,4 +23,4 @@ router.post("/logout", protectUser, (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

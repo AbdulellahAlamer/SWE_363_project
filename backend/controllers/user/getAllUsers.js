@@ -1,8 +1,10 @@
-const User = require("../../models/user.js");
+import User from "../../models/user.js";
 
-module.exports = async (req, res, next) => {
+const getAllUsers = async (req, res, next) => {
   try {
   } catch (error) {
     next(error);
   }
 };
+
+export default getAllUsers;

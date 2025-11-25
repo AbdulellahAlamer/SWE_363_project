@@ -1,7 +1,7 @@
-const User = require('../../models/user.js');
+import User from "../../models/user.js";
 
 // Get current user information
-module.exports = async (req, res, next) => {
+const getCurrentUser = async (req, res, next) => {
   try {
     // req.user was set by auth middleware
     const user = await User.findById(req.user.id).select('-password');
@@ -34,3 +34,5 @@ module.exports = async (req, res, next) => {
     next(error);
   }
 };
+
+export default getCurrentUser;

@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-const config = require("../config/config");
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
+import config from "../config/config.js";
 
 // Base auth guard: verifies JWT, loads user, and attaches it to req.user
-module.exports = async (req, res, next) => {
+const protectRoute = async (req, res, next) => {
   try {
     // Get token from cookie or Authorization header
     let token = req.cookies?.jwt;
@@ -66,3 +66,5 @@ module.exports = async (req, res, next) => {
     });
   }
 };
+
+export default protectRoute;

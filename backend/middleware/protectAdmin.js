@@ -1,7 +1,7 @@
-const protectRoute = require("./protectRoute");
+import protectRoute from "./protectRoute.js";
 
 // Auth guard for users with role "admin"
-module.exports = async (req, res, next) => {
+const protectAdmin = async (req, res, next) => {
   await protectRoute(req, res, (err) => {
     if (err) return next(err);
 
@@ -16,3 +16,5 @@ module.exports = async (req, res, next) => {
     next();
   });
 };
+
+export default protectAdmin;

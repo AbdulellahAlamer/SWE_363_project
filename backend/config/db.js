@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const config = require('./config');
+import mongoose from "mongoose";
+import config from "./config.js";
 
 // MongoDB connection
-const connect = async () => {
+export const connect = async () => {
   try {
     let connectionString = config.db.uri;
     
@@ -19,5 +19,3 @@ const connect = async () => {
     throw error;
   }
 };
-
-module.exports = { connect };

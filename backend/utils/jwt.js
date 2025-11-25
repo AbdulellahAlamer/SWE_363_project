@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
 
 // Generate JWT token
-const generateToken = (payload) => {
+export const generateToken = (payload) => {
   try {
     const tokenPayload = {
       id: payload.id,
@@ -26,7 +26,7 @@ const generateToken = (payload) => {
 };
 
 // Verify JWT token
-const verifyToken = (token) => {
+export const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, config.jwt.secret, {
     });
@@ -57,7 +57,7 @@ const verifyToken = (token) => {
 };
 
 // Decode token without verification (for debugging)
-const decodeToken = (token) => {
+export const decodeToken = (token) => {
   try {
     return jwt.decode(token, { complete: true });
   } catch (error) {
@@ -67,7 +67,7 @@ const decodeToken = (token) => {
 };
 
 // Get token expiration date
-const getTokenExpiration = (token) => {
+export const getTokenExpiration = (token) => {
   try {
     const decoded = jwt.decode(token);
     if (decoded && decoded.exp) {
@@ -81,7 +81,7 @@ const getTokenExpiration = (token) => {
 };
 
 // Check if token is expired
-const isTokenExpired = (token) => {
+export const isTokenExpired = (token) => {
   try {
     const decoded = jwt.decode(token);
     if (decoded && decoded.exp) {
@@ -95,7 +95,7 @@ const isTokenExpired = (token) => {
 };
 
 // Refresh token (generate new token with updated info)
-const refreshToken = (oldToken, newPayload = {}) => {
+export const refreshToken = (oldToken, newPayload = {}) => {
   try {
     const decoded = jwt.decode(oldToken);
     if (!decoded) {
@@ -115,13 +115,4 @@ const refreshToken = (oldToken, newPayload = {}) => {
     console.error('Error refreshing token:', error.message);
     throw new Error('Token refresh failed');
   }
-};
-
-module.exports = {
-  generateToken,
-  verifyToken,
-  decodeToken,
-  getTokenExpiration,
-  isTokenExpired,
-  refreshToken
 };

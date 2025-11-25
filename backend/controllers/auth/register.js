@@ -1,7 +1,7 @@
-const User = require('../../models/user.js');
+import User from "../../models/user.js";
 
 // User registration controller
-module.exports = async (req, res, next) => {
+const register = async (req, res, next) => {
   try {
     const { username, password, email } = req.body;
     
@@ -108,3 +108,5 @@ module.exports = async (req, res, next) => {
     next(error);
   }
 };
+
+export default register;

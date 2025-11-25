@@ -1,8 +1,8 @@
-const User = require('../../models/user.js');
-const { generateToken } = require('../../utils/jwt');
+import User from "../../models/user.js";
+import { generateToken } from "../../utils/jwt.js";
 
 // User login controller
-module.exports = async (req, res, next) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     
@@ -92,3 +92,5 @@ module.exports = async (req, res, next) => {
     next(error);
   }
 };
+
+export default login;
