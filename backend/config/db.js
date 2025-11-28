@@ -11,14 +11,17 @@ export const connect = async () => {
       if (!config.db.password) {
         throw new Error("Database password missing for connection string");
       }
-      connectionString = connectionString.replace("<password>", config.db.password);
+      connectionString = connectionString.replace(
+        "<password>",
+        config.db.password
+      );
     }
 
     await mongoose.connect(connectionString, config.db.options);
-    console.log(`MongoDB connected: ${connectionString.split('@')[0]}@***`);
-    return { type: 'mongodb', isConnected: true };
+    console.log(`MongoDB connected: ${connectionString.split("@")[0]}@***`);
+    return { type: "mongodb", isConnected: true };
   } catch (error) {
-    console.error('MongoDB connection error:', error.message);
+    console.error("MongoDB connection error:", error.message);
     throw error;
   }
 };

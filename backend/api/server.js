@@ -6,6 +6,7 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
+import process from "process";
 
 import config from "../config/config.js";
 import { connect } from "../config/db.js";
@@ -14,9 +15,6 @@ import { connect } from "../config/db.js";
 import authRoutes from "../routes/auth.routes.js";
 import userRoutes from "../routes/user.routes.js";
 import clubRoutes from "../routes/club.routes.js";
-
-// MIDDLEWARE
-import protectRoute from "../middleware/protectRoute.js";
 
 dotenv.config();
 
@@ -45,7 +43,6 @@ app.get("/", (req, res) => {
   });
 });
 
-
 /* ==========================
         API ROUTES
 ========================== */
@@ -54,11 +51,10 @@ app.get("/", (req, res) => {
 app.use(`${config.app.apiPrefix}/auth`, authRoutes);
 
 // User routes (protected)
-app.use(`${config.app.apiPrefix}/users`, protectRoute, userRoutes);
+app.use(`${config.app.apiPrefix}/users`, userRoutes);
 
 // Club routes (protected)
 app.use(`${config.app.apiPrefix}/clubs`, clubRoutes);
-
 
 /* ==========================
         404 HANDLERS
