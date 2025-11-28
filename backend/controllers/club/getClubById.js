@@ -1,5 +1,7 @@
 // Get a specific club
-export const getClubById = async (req, res) => {
+import Club from "../../models/Club.js"; // Import your Club model
+
+export default async (req, res) => {
   try {
     const club = await Club.findById(req.params.id).populate(
       "president members events posts"

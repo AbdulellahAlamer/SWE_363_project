@@ -1,7 +1,9 @@
 // Delete a club
-export const deleteClub = async (req, res) => {
+import Club from "../../models/Club.js"; // Import your Club model
+
+export default async (req, res) => {
   try {
-    const club = await club.findByIdAndDelete(req.params.id);
+    const club = await Club.findByIdAndDelete(req.params.id);
     if (!club)
       return res.status(404).json({ status: "error", message: "Club not found" });
 

@@ -1,5 +1,7 @@
 // Edit a club
-export const updateClub = async (req, res) => {
+import Club from "../../models/Club.js"; // Import your Club model
+
+export default async (req, res) => {
   try {
     const club = await Club.findByIdAndUpdate(req.params.id, req.body, {
       new: true,

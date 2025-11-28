@@ -1,6 +1,7 @@
 // Get clubs the user joined
+import Club from "../../models/Club.js"; // Import your Club model
 
-export const getMyClubs = async (req, res) => {
+export default async (req, res) => {
   try {
     const clubs = await Club.find({ members: req.user._id });
     res.json({ status: "success", data: clubs });

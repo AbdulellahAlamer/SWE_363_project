@@ -1,23 +1,27 @@
 // routes/club.routes.js
 import express from "express";
 import protectUser from "../middleware/protectUser.js";
-import protectSuperAdmin from "../middleware/protectSuperAdmin.js";
+import protectSuperAdmin from "../middleware/protectAdmin.js";
 
-import {
-  getAllClubs,
-  getClubById,
-  getMyClubs,
-  createClub,
-  updateClub,
-  deleteClub,
-} from "../controllers/clubs/club.controllers.js";
-
+import getAllClubs from '../controllers/club/getAllClubs.js';
+import getClubById from '../controllers/club/getClubById.js';
+import getMyClubs from '../controllers/club/getMyClubs.js';
+import createClub from '../controllers/club/createClub.js';
+import updateClub from '../controllers/club/updateClub.js';
+import deleteClub from '../controllers/club/deleteClub.js';
+import { get } from "mongoose";
 const router = express.Router();
+// test imports
+
 
 // -----------------------------
 // PUBLIC / USER ROUTES
 // -----------------------------
 
+
+router.get("/test", (req, res) => {
+  res.send("clubs route works");
+});
 // Get all clubs
 router.get("/", getAllClubs);
 

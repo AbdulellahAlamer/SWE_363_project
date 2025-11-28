@@ -24,6 +24,7 @@ const config = {
   },
   db: {
     uri: process.env.DATABASE || "mongodb://localhost:27017/node_template",
+    password: process.env.DATABASE_PASSWORD,
     options: {
       useNewUrlParser: true,
       useUnifiedTopology: true,
