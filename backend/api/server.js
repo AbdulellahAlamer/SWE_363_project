@@ -11,6 +11,9 @@ import { connect } from "../config/db.js";
 import authRoutes from "../routes/auth.routes.js";
 import userRoutes from "../routes/user.routes.js";
 import protectRoute from "../middleware/protectRoute.js";
+import eventRoutes from "../routes/event.routes.js";
+
+import clubRoutes from "../routes/club.routes.js";
 
 dotenv.config();
 
@@ -44,6 +47,9 @@ app.get("/", (req, res) => {
 // API Routes
 app.use(`${config.app.apiPrefix}/auth`, authRoutes);
 app.use(`${config.app.apiPrefix}/users`, protectRoute, userRoutes);
+
+// club routes
+app.use(`${config.app.apiPrefix}/clubs`, protectRoute, clubRoutes);
 
 
 
@@ -137,5 +143,8 @@ const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
   startServer();
 }
+
+// club routes
+
 
 export default app;
