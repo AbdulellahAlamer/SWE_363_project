@@ -34,12 +34,12 @@ router.get("/user/mine", protectUser, getMyClubs);
 // -----------------------------
 
 // Create a club
-router.post("/", protectSuperAdmin, createClub);
+router.post("/", createClub);
 
 // Update a club
 router.put("/:id", protectSuperAdmin, updateClub);
 
 // Delete a club
-router.delete("/:id", protectSuperAdmin, deleteClub);
+router.delete("/:id", deleteClub);
 
 export default router;

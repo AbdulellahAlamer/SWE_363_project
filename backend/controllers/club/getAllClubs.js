@@ -1,4 +1,7 @@
-import Club from "../../models/Club.js"; // Import your Club model
+import Club from "../../models/Club.js";
+import "../../models/Event.js";
+import "../../models/Post.js";
+import "../../models/user.js";
 
 export default async (req, res) => {
   try {

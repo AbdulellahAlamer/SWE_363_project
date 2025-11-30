@@ -1,17 +1,25 @@
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
-
 import process from "process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const envPath = (() => {
-  return path.join(__dirname, "..", ".env");
-})();
+const envCandidates = [
+  path.join(__dirname, "..", ".env"),
+  path.join(__dirname, "..", "config.env"),
+  path.join(__dirname, "config.env"),
+];
 
-dotenv.config({ path: envPath });
+const envPath = envCandidates.find((candidate) => fs.existsSync(candidate));
+
+if (envPath) {
+  dotenv.config({ path: envPath });
+} else {
+  dotenv.config();
+}
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 const isProduction = NODE_ENV === "production";
