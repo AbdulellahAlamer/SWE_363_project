@@ -6,7 +6,7 @@ export const generateToken = (payload) => {
   try {
     const tokenPayload = {
       id: payload.id,
-      username: payload.username,
+      name: payload.name,
       email: payload.email,
       role: payload.role,
       iat: Math.floor(Date.now() / 1000) // Issued at time in seconds
@@ -105,7 +105,7 @@ export const refreshToken = (oldToken, newPayload = {}) => {
     // Merge old payload with new data
     const payload = {
       id: newPayload.id || decoded.id,
-      username: newPayload.username || decoded.username,
+      name: newPayload.name || decoded.name,
       email: newPayload.email || decoded.email,
       role: newPayload.role || decoded.role
     };

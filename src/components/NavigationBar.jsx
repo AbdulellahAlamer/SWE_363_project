@@ -78,7 +78,11 @@ function NavigationBar({
 
   const logoutButton = ({ collapsed = false, className = "" } = {}) => (
     <button
-      onClick={() => (window.location.href = "/login")}
+      onClick={() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }}
       className={`mt-auto w-full border border-red-600 text-red-600 font-medium py-3 px-4 rounded-lg hover:bg-red-100 transition-colors ${
         collapsed ? "flex items-center justify-center" : ""
       } ${className}`}

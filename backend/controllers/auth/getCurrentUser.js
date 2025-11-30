@@ -19,7 +19,7 @@ const getCurrentUser = async (req, res, next) => {
       data: {
         user: {
           id: user._id,
-          username: user.username,
+          name: user.name,
           email: user.email,
           role: user.role,
           status: user.status,

@@ -1,6 +1,11 @@
 import { useState } from "react";
 import Button from "../components/Button.jsx";
 import PopupForm from "../components/PopupForm.jsx";
+import {
+  login as loginRequest,
+  persistSession,
+  roleRoutes,
+} from "../api/auth.js";
 
 function AuthField({
   label,
@@ -37,42 +42,35 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const USERS = [
-    { email: "admin@gmail.com", password: "12345678" },
-
-    { email: "clubPresident@gmail.com", password: "12345678" },
-
-    { email: "student@gmail.com", password: "12345678" },
-  ];
-
-  const routeByEmail = {
-    "admin@gmail.com": "/admin",
-    "clubPresident@gmail.com": "/president",
-    "student@gmail.com": "/clubs",
-  };
-
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setFeedback(null);
+    setIsSubmitting(true);
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const account = USERS.find(
-      (candidate) => candidate.email.toLowerCase() === normalizedEmail
-    );
+    try {
+      const normalizedEmail = email.trim().toLowerCase();
+      const response = await loginRequest({
+        email: normalizedEmail,
+        password,
+      });
 
-    if (account && account.password === password) {
-      const destination = routeByEmail[account.email];
-      if (destination) {
-        window.location.assign(destination);
-        return;
-      }
+      const token = response?.data?.token;
+      const user = response?.data?.user;
+
+      persistSession({ token, user });
+
+      const destination = roleRoutes[user?.role] || "/clubs";
+      window.location.assign(destination);
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message: error?.message || "Unable to login. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setFeedback({
-      type: "error",
-      message: "Invalid email or password. Try again.",
-    });
   };
 
   return (
@@ -90,6 +88,7 @@ function LoginPage() {
           type="email"
           placeholder="you@student.kfupm.edu.sa"
           autoComplete="email"
+          required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
@@ -98,6 +97,7 @@ function LoginPage() {
           type="password"
           placeholder="Enter your password"
           autoComplete="current-password"
+          required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />
@@ -120,8 +120,12 @@ function LoginPage() {
         </div>
 
         <div className="">
-          <Button type="submit" className="w-full justify-center text-lg">
-            Login
+          <Button
+            type="submit"
+            className="w-full justify-center text-lg"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Signing in..." : "Login"}
           </Button>
         </div>
       </form>

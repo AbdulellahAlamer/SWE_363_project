@@ -1,5 +1,5 @@
 const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api"
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1"
 ).replace(/\/$/, "");
 
 const defaultHeaders = {
@@ -31,11 +31,14 @@ export async function request(path, options = {}) {
     data = await response.json();
   } catch (err) {
     // Ignore JSON parse errors; some endpoints may return empty responses
+    console.log(err);
   }
 
   if (!response.ok) {
     const message =
-      data?.message || response.statusText || "Request failed. Please try again.";
+      data?.message ||
+      response.statusText ||
+      "Request failed. Please try again.";
     throw new Error(message);
   }
 

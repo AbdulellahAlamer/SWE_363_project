@@ -61,7 +61,7 @@ const login = async (req, res, next) => {
     // Generate token
     const token = generateToken({
       id: user._id,
-      username: user.username,
+      name: user.name,
       email: user.email,
       role: user.role,
     });
@@ -78,7 +78,7 @@ const login = async (req, res, next) => {
         token,
         user: {
           id: userObject._id,
-          username: userObject.username,
+          name: userObject.name,
           email: userObject.email,
           role: userObject.role,
           status: userObject.status,

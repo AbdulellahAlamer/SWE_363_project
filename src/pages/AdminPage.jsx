@@ -222,10 +222,7 @@ export default function AdminPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td
-                      colSpan="4"
-                      className="py-6 text-center text-gray-600"
-                    >
+                    <td colSpan="4" className="py-6 text-center text-gray-600">
                       Loading clubs…
                     </td>
                   </tr>
@@ -243,10 +240,7 @@ export default function AdminPage() {
                   </tr>
                 ) : filteredClubs.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan="4"
-                      className="py-6 text-center text-gray-600"
-                    >
+                    <td colSpan="4" className="py-6 text-center text-gray-600">
                       No clubs to display.
                     </td>
                   </tr>
@@ -399,10 +393,10 @@ export default function AdminPage() {
                 onChange={(e) => setPresId(e.target.value)}
               />
             </FormField>
-            <FormField label="University Email">
+            <FormField label="Email">
               <input
                 type="email"
-                placeholder="username@kfupm.edu.sa"
+                placeholder="email@gamil.com"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presEmail}
                 onChange={(e) => setPresEmail(e.target.value)}

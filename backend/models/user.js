@@ -3,15 +3,14 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: [true, "Username is required"],
-      unique: true,
-    },
     email: {
       type: String,
       required: [true, "Email is required"],
       unique: true,
+    },
+
+    username: {
+      type: String,
     },
     password: {
       type: String,
@@ -92,7 +91,6 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 // Index for better query performance
 userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 userSchema.index({ status: 1 });
 
 // Create and export the model
