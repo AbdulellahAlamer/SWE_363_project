@@ -9,6 +9,8 @@ import getMyClubs from "../controllers/club/getMyClubs.js";
 import createClub from "../controllers/club/createClub.js";
 import updateClub from "../controllers/club/updateClub.js";
 import deleteClub from "../controllers/club/deleteClub.js";
+import subscribeClub from "../controllers/club/subscribeClub.js";
+import unsubscribeClub from "../controllers/club/unsubscribeClub.js";
 
 const router = express.Router();
 // test imports
@@ -20,14 +22,20 @@ const router = express.Router();
 router.get("/test", (req, res) => {
   res.send("clubs route works");
 });
+
+// Get clubs the user has joined
+router.get("/user/mine", protectUser, getMyClubs);
+
 // Get all clubs
 router.get("/", getAllClubs);
+
+// Subscribe / unsubscribe
+router.post("/:id/subscribe", protectUser, subscribeClub);
+router.delete("/:id/subscribe", protectUser, unsubscribeClub);
 
 // Get a specific club
 router.get("/:id", getClubById);
 
-// Get clubs the user has joined
-router.get("/user/mine", protectUser, getMyClubs);
 
 // -----------------------------
 // SUPER ADMIN ROUTES

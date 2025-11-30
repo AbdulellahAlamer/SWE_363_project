@@ -12,6 +12,21 @@ const clubSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    category: {
+      type: String,
+      default: "General",
+      trim: true,
+    },
+    contactEmail: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ["active", "awaiting-president", "inactive"],
+      default: "active",
+    },
 
     logo: {
       type: String, // URL or path to logo

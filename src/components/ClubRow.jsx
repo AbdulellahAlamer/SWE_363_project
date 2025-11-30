@@ -1,5 +1,15 @@
 // ClubRow component for displaying and editing a club row in the table
-export default function ClubRow({ club, editingId, editForm, setEditForm, onEdit, onDelete, onSaveEdit, onCancelEdit }) {
+export default function ClubRow({
+  club,
+  editingId,
+  editForm,
+  setEditForm,
+  onEdit,
+  onDelete,
+  onSaveEdit,
+  onCancelEdit,
+  isSaving = false,
+}) {
   return (
     <tr className="border-b border-gray-200">
       <td className="py-4 flex items-center gap-3">
@@ -37,7 +47,13 @@ export default function ClubRow({ club, editingId, editForm, setEditForm, onEdit
         <div className="flex gap-4">
           {editingId === club.id ? (
             <>
-              <button onClick={() => onSaveEdit(club.id)} className="text-blue-600 hover:text-blue-700">Save</button>
+              <button
+                onClick={() => onSaveEdit(club.id)}
+                className="text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
               <button onClick={onCancelEdit} className="text-gray-600 hover:text-gray-700">Cancel</button>
             </>
           ) : (

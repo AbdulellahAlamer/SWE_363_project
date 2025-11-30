@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { adminClubSeeds } from "../assets/data";
+import { useEffect, useState } from "react";
+import {
+  fetchClubs,
+  fetchMyClubs,
+  subscribeToClub,
+} from "../api/clubs";
 import ClubCard from "../components/ClubCard";
 import Button from "../components/Button";
 import NavigationBar from "../components/NavigationBar";
 
 export default function ClubsPage() {
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
@@ -13,14 +21,13 @@ export default function ClubsPage() {
   // club object used to show popup after join
   const [joinedClubPopup, setJoinedClubPopup] = useState(null);
 
-  // Extract unique categories
   const categories = [
     "All",
-    ...new Set(adminClubSeeds.map((club) => club.category)),
+    ...new Set(clubs.map((club) => club.category || "General")),
   ];
 
   // Filter clubs based on search and category
-  const filteredClubs = adminClubSeeds.filter((club) => {
+  const filteredClubs = clubs.filter((club) => {
     const matchesSearch =
       club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (club.category || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -29,13 +36,49 @@ export default function ClubsPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const handleJoin = (club) => {
-    setJoinedIds((prev) => {
-      const next = new Set(prev);
-      next.add(club.id);
-      return next;
-    });
-    setJoinedClubPopup(club);
+  const loadClubs = async () => {
+    try {
+      setError(null);
+      setIsRefreshing(true);
+      const data = await fetchClubs();
+      setClubs(data);
+    } catch (err) {
+      setError(err.message || "Failed to load clubs");
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  const loadJoined = async () => {
+    try {
+      const mine = await fetchMyClubs();
+      setJoinedIds(new Set(mine.map((c) => c.id)));
+    } catch (err) {
+      // silently ignore, likely unauthenticated
+    }
+  };
+
+  useEffect(() => {
+    loadClubs();
+    loadJoined();
+  }, []);
+
+  const handleJoin = async (club) => {
+    try {
+      const updated = await subscribeToClub(club.id);
+      setJoinedIds((prev) => {
+        const next = new Set(prev);
+        next.add(club.id);
+        return next;
+      });
+      setClubs((prev) =>
+        prev.map((c) => (c.id === club.id ? updated : c))
+      );
+      setJoinedClubPopup(club);
+    } catch (err) {
+      window.alert(err.message || "Failed to subscribe to club.");
+    }
   };
 
   // NAVIGATION: open club-profile and include club id so ClubProfile can load correct club
@@ -83,7 +126,16 @@ export default function ClubsPage() {
         </div>
 
         <div className="max-w-6xl mx-auto px-8 pb-12">
-          {filteredClubs.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12 text-gray-600">Loading clubs…</div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-gray-700 mb-3">{error}</p>
+              <Button variant="primary" onClick={loadClubs} disabled={isRefreshing}>
+                {isRefreshing ? "Refreshing..." : "Retry"}
+              </Button>
+            </div>
+          ) : filteredClubs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredClubs.map((club) => (
                 <ClubCard
