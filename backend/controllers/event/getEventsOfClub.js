@@ -1,11 +1,7 @@
-// this file is for retrieving events of a specific club
-const express = require("express");
-const router = express.Router();
-const Event = require("../models/Event");
-const Club = require("../models/Club");
+import Event from "../../models/Event.js";
 
-// Get events of a specific club by club ID
-router.get("/:clubId", async (req, res) => {
+// Controller to get events of a specific club by club ID
+const getEventsOfClub = async (req, res) => {
   try {
     const { clubId } = req.params;
     const events = await Event.find({ club: clubId })
@@ -16,6 +12,6 @@ router.get("/:clubId", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error fetching events for the club", error: error.message });
   }
-});
+};
 
-module.exports = router;
+export default getEventsOfClub;
