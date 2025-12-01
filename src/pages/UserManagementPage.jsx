@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
 import PopupForm from "../components/PopupForm.jsx";
@@ -46,7 +45,13 @@ export default function UserManagementPage() {
   const [showForm, setShowForm] = useState(false);
   const [users, setUsers] = useState(userManagementUsers);
   const [editIndex, setEditIndex] = useState(null);
-  const [editUser, setEditUser] = useState({ name: '', email: '', role: '', joined: '', initials: '' });
+  const [editUser, setEditUser] = useState({
+    name: "",
+    email: "",
+    role: "",
+    joined: "",
+    initials: "",
+  });
   const [searchTerm, setSearchTerm] = useState("");
 
   // Add user handler
@@ -69,19 +74,34 @@ export default function UserManagementPage() {
             : formData.role === "president"
             ? "Club President"
             : "Administrator",
-        joined: new Date().toLocaleString("default", { month: "short", year: "numeric" }),
+        joined: new Date().toLocaleString("default", {
+          month: "short",
+          year: "numeric",
+        }),
         initials,
       },
     ]);
     setShowForm(false);
   }
 
+  const filteredUsers = users
+    .map((user, originalIndex) => ({ user, originalIndex }))
+    .filter(({ user }) => {
+      if (!searchTerm) return true;
+      const first = searchTerm.trim()[0];
+      if (!first) return true;
+      return (
+        user.name.charAt(0).toLowerCase() === first.toLowerCase() ||
+        user.email.charAt(0).toLowerCase() === first.toLowerCase()
+      );
+    });
+
   return (
     <div className="flex min-h-screen bg-slate-50">
       <NavigationBar active="/user-management" type="admin" />
 
-      <main className="ml-0 md:ml-64 flex-1 space-y-6 p-8">
-        <header className="flex items-center justify-between">
+      <main className="flex-1 space-y-6 p-4 sm:p-6 lg:p-8 pt-16 md:pt-10 md:ml-64">
+        <header className="rounded-2xl border border-white bg-white/90 shadow-md shadow-slate-200 px-4 sm:px-16 py-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-fit sm:w-full ">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Admin · Access control
@@ -91,15 +111,15 @@ export default function UserManagementPage() {
             </h1>
           </div>
           <button
-            className="rounded-full bg-linear-to-r from-blue-600 to-indigo-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:translate-y-0.5"
+            className="w-full sm:w-auto rounded-full bg-linear-to-r from-blue-600 to-indigo-500 py-2 sm:px-8 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:translate-y-0.5"
             onClick={() => setShowForm(true)}
           >
             + Add User
           </button>
         </header>
 
-        <section className="rounded-2xl border border-white bg-white/80 shadow-md shadow-slate-200">
-          <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 md:flex-row md:items-center md:justify-between">
+        <section className="rounded-2xl border border-white bg-white/80 shadow-md shadow-slate-200 overflow-hidden">
+          <div className="flex flex-col gap-4 border-b border-slate-100 px-4 sm:px-6 py-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
                 All users
@@ -111,138 +131,305 @@ export default function UserManagementPage() {
             <input
               type="text"
               placeholder="Search by name or email"
-              className="w-full max-w-xs rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="w-full max-w-full sm:max-w-xs rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <table className="w-full text-sm text-slate-700">
-            <thead className="text-left uppercase tracking-wide text-slate-400">
-              <tr>
-                <th className="px-6 py-3 font-medium">Name</th>
-                <th className="px-6 py-3 font-medium">Email</th>
-                <th className="px-6 py-3 font-medium">Role</th>
-                <th className="px-6 py-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users
-                .filter((user) => {
-                  if (!searchTerm) return true;
-                  const first = searchTerm.trim()[0];
-                  if (!first) return true;
-                  // Check first char of name or email
-                  return (
-                    user.name.charAt(0).toLowerCase() === first.toLowerCase() ||
-                    user.email.charAt(0).toLowerCase() === first.toLowerCase()
-                  );
-                })
-                .map((user, idx) => (
-                <tr
-                  key={user.email}
-                  className="border-t border-slate-100 bg-white/60"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
-                        {user.initials}
-                      </div>
-                      <div>
-                        {editIndex === idx ? (
-                          <>
-                            <input
-                              className="font-semibold text-slate-900 border rounded px-2 py-1 mb-1 w-full"
-                              value={editUser.name}
-                              onChange={e => setEditUser({ ...editUser, name: e.target.value })}
-                            />
-                            <input
-                              className="text-xs text-slate-400 border rounded px-2 py-1 w-full"
-                              value={editUser.joined}
-                              onChange={e => setEditUser({ ...editUser, joined: e.target.value })}
-                            />
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-semibold text-slate-900">{user.name}</p>
-                            <p className="text-xs text-slate-400">Joined {user.joined}</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {editIndex === idx ? (
+          <div className="sm:hidden px-4 pt-4 space-y-3">
+            {filteredUsers.map(({ user, originalIndex }) => (
+              <div
+                key={`mobile-${user.email}`}
+                className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-base font-semibold text-blue-600">
+                    {user.initials}
+                  </div>
+                  <div className="flex-1">
+                    {editIndex === originalIndex ? (
+                      <>
+                        <input
+                          className="font-semibold text-slate-900 border rounded px-2 py-1 mb-1 w-full"
+                          value={editUser.name}
+                          onChange={(e) =>
+                            setEditUser({ ...editUser, name: e.target.value })
+                          }
+                        />
+                        <input
+                          className="text-xs text-slate-400 border rounded px-2 py-1 w-full"
+                          value={editUser.joined}
+                          onChange={(e) =>
+                            setEditUser({ ...editUser, joined: e.target.value })
+                          }
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-slate-900">
+                          {user.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Joined {user.joined}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 space-y-3 text-sm">
+                  <div>
+                    <p className="text-xs uppercase text-slate-400 mb-1">
+                      Email
+                    </p>
+                    {editIndex === originalIndex ? (
                       <input
                         className="border rounded px-2 py-1 w-full"
                         value={editUser.email}
-                        onChange={e => setEditUser({ ...editUser, email: e.target.value })}
+                        onChange={(e) =>
+                          setEditUser({ ...editUser, email: e.target.value })
+                        }
                       />
-                    ) : user.email}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editIndex === idx ? (
+                    ) : (
+                      <p className="text-slate-600">{user.email}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase text-slate-400 mb-1">
+                      Role
+                    </p>
+                    {editIndex === originalIndex ? (
                       <select
                         className="border rounded px-2 py-1 w-full"
                         value={editUser.role}
-                        onChange={e => setEditUser({ ...editUser, role: e.target.value })}
+                        onChange={(e) =>
+                          setEditUser({ ...editUser, role: e.target.value })
+                        }
                       >
                         <option value="Student">Student</option>
                         <option value="Club President">Club President</option>
                         <option value="Administrator">Administrator</option>
                       </select>
-                    ) : user.role}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    {editIndex === idx ? (
+                    ) : (
+                      <p className="text-slate-600">{user.role}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-end gap-4 text-sm font-semibold">
+                  {editIndex === originalIndex ? (
+                    <>
+                      <button
+                        className="text-green-600"
+                        onClick={() => {
+                          const updated = [...users];
+                          updated[originalIndex] = {
+                            ...editUser,
+                            initials: editUser.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                              .slice(0, 2),
+                          };
+                          setUsers(updated);
+                          setEditIndex(null);
+                        }}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="text-gray-500"
+                        onClick={() => setEditIndex(null)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="text-blue-600"
+                        onClick={() => {
+                          setEditIndex(originalIndex);
+                          setEditUser({ ...user });
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-red-500"
+                        onClick={() => {
+                          if (window.confirm(`Remove user ${user.name}?`)) {
+                            setUsers(
+                              users.filter((_, i) => i !== originalIndex)
+                            );
+                          }
+                        }}
+                      >
+                        Remove
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden sm:block overflow-x-auto w-full">
+            <table className="w-full min-w-[720px] text-sm text-slate-700">
+              <thead className="text-left uppercase tracking-wide text-slate-400">
+                <tr>
+                  <th className="px-6 py-3 font-medium">Name</th>
+                  <th className="px-6 py-3 font-medium">Email</th>
+                  <th className="px-6 py-3 font-medium">Role</th>
+                  <th className="px-6 py-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map(({ user, originalIndex }) => (
+                  <tr
+                    key={user.email}
+                    className="border-t border-slate-100 bg-white/60"
+                  >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-600">
+                            {user.initials}
+                          </div>
+                          <div>
+                    {editIndex === originalIndex ? (
+                      <>
+                        <input
+                          className="font-semibold text-slate-900 border rounded px-2 py-1 mb-1 w-full"
+                          value={editUser.name}
+                          onChange={(e) =>
+                                    setEditUser({
+                                      ...editUser,
+                                      name: e.target.value,
+                                    })
+                                  }
+                                />
+                                <input
+                                  className="text-xs text-slate-400 border rounded px-2 py-1 w-full"
+                                  value={editUser.joined}
+                                  onChange={(e) =>
+                                    setEditUser({
+                                      ...editUser,
+                                      joined: e.target.value,
+                                    })
+                                  }
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <p className="font-semibold text-slate-900">
+                                  {user.name}
+                                </p>
+                                <p className="text-xs text-slate-400">
+                                  Joined {user.joined}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                    {editIndex === originalIndex ? (
+                      <input
+                        className="border rounded px-2 py-1 w-full"
+                        value={editUser.email}
+                        onChange={(e) =>
+                          setEditUser({
+                                ...editUser,
+                                email: e.target.value,
+                              })
+                            }
+                          />
+                        ) : (
+                          user.email
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                    {editIndex === originalIndex ? (
+                      <select
+                        className="border rounded px-2 py-1 w-full"
+                        value={editUser.role}
+                        onChange={(e) =>
+                              setEditUser({ ...editUser, role: e.target.value })
+                            }
+                          >
+                            <option value="Student">Student</option>
+                            <option value="Club President">
+                              Club President
+                            </option>
+                            <option value="Administrator">Administrator</option>
+                          </select>
+                        ) : (
+                          user.role
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                    {editIndex === originalIndex ? (
                       <>
                         <button
                           className="text-green-600 hover:underline mr-2"
                           onClick={() => {
                             const updated = [...users];
-                            updated[idx] = { ...editUser, initials: (editUser.name.split(' ').map(n => n[0]).join('').toUpperCase()).slice(0,2) };
-                            setUsers(updated);
-                            setEditIndex(null);
-                          }}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="text-gray-500 hover:underline"
-                          onClick={() => setEditIndex(null)}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="text-blue-600 hover:underline"
-                          onClick={() => {
-                            setEditIndex(idx);
-                            setEditUser(user);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <span className="mx-2 text-slate-300">|</span>
-                        <button
-                          className="text-red-500 hover:underline"
-                          onClick={() => {
-                            if (window.confirm(`Remove user ${user.name}?`)) {
-                              setUsers(users.filter((_, i) => i !== idx));
-                            }
-                          }}
-                        >
-                          Remove
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                            updated[originalIndex] = {
+                              ...editUser,
+                              initials: editUser.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                    .toUpperCase()
+                                    .slice(0, 2),
+                                };
+                                setUsers(updated);
+                                setEditIndex(null);
+                              }}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="text-gray-500 hover:underline"
+                              onClick={() => setEditIndex(null)}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                          <button
+                            className="text-blue-600 hover:underline"
+                            onClick={() => {
+                              setEditIndex(originalIndex);
+                              setEditUser({ ...user });
+                            }}
+                          >
+                            Edit
+                          </button>
+                            <span className="mx-2 text-slate-300">|</span>
+                            <button
+                              className="text-red-500 hover:underline"
+                              onClick={() => {
+                                if (
+                                  window.confirm(`Remove user ${user.name}?`)
+                                ) {
+                                  setUsers(
+                                    users.filter((_, i) => i !== originalIndex)
+                                  );
+                                }
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </main>
 

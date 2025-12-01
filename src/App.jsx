@@ -10,6 +10,7 @@ import PostsPage from "./pages/PostsPage.jsx";
 import MyProfilePage from "./pages/MyProfilePage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import { getStoredSession, roleRoutes } from "./api/auth.js";
 
 const routes = {
   "/": LoginPage,
@@ -28,7 +29,7 @@ const routes = {
 };
 
 const isAuthPath = (path) =>
-  path === "/" || path === "/login" || path === "/register";
+  path === "/" || path === "/login" || path === "/register" || path === "/reset-password";
 
 const normalizePath = (pathname) => {
   if (pathname === "/") return "/";
@@ -39,11 +40,29 @@ const goTo = (target) => {
   window.location.assign(target);
 };
 
+const getDestinationForUser = (user) => roleRoutes[user?.role] || "/clubs";
+
 function App() {
   const path = normalizePath(window.location.pathname);
   const ActivePage = routes[path] ?? LoginPage;
   const authLayout = isAuthPath(path);
   const isRegister = path === "/register";
+  const session = getStoredSession();
+  const authedDestination = session?.user
+    ? getDestinationForUser(session.user)
+    : null;
+
+  // Keep authenticated users off the auth screens
+  if (authLayout && authedDestination && path !== authedDestination) {
+    goTo(authedDestination);
+    return null;
+  }
+
+  // Keep unauthenticated users on the auth screens
+  if (!authLayout && !session?.user) {
+    goTo("/login");
+    return null;
+  }
 
   if (!authLayout) {
     return (

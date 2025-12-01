@@ -6,10 +6,19 @@ import FormField from "../components/FormField.jsx";
 import ClubRow from "../components/ClubRow.jsx";
 import LogoUpload from "../components/LogoUpload.jsx";
 import ButtonGroup from "../components/ButtonGroup.jsx";
-import { adminStatistics, adminClubSeeds } from "../assets/data.js";
+import { adminStatistics } from "../assets/data.js";
+import {
+  fetchClubs,
+  createClub,
+  updateClub,
+  deleteClub,
+  isObjectId,
+} from "../api/clubs";
 
 export default function AdminPage() {
-  const [clubs, setClubs] = useState(adminClubSeeds);
+  const [clubs, setClubs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ name: "", president: "" });
@@ -31,14 +40,33 @@ export default function AdminPage() {
   const [presClub, setPresClub] = useState("");
   const [presPassword, setPresPassword] = useState("");
 
-  console.log(logoFile);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   useEffect(() => {
-    // revoke object URL on unmount or when logoFile changes
     return () => {
       if (logoPreview) URL.revokeObjectURL(logoPreview);
     };
   }, [logoPreview]);
+
+  const loadClubs = async () => {
+    try {
+      setIsRefreshing(true);
+      setError(null);
+      const data = await fetchClubs();
+      setClubs(data);
+    } catch (err) {
+      setError(err.message || "Failed to load clubs");
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadClubs();
+  }, []);
 
   const resetForm = () => {
     setClubName("");
@@ -53,42 +81,49 @@ export default function AdminPage() {
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return "";
-    const parts = name.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + (parts[1][0] || "")).toUpperCase();
-  };
-
-  const publishClub = () => {
+  const publishClub = async () => {
     if (!clubName.trim()) {
       window.alert("Please enter a club name before publishing.");
       return;
     }
 
-    const newClub = {
-      id: "c" + Date.now(),
-      initials: getInitials(clubName),
-      name: clubName,
-      updated: "Just now",
-      president: assignPresident || "Vacant",
-      members: 0,
+    const payload = {
+      name: clubName.trim(),
+      description: description.trim(),
+      logo: logoPreview || "",
+      contactEmail: contactEmail.trim() || undefined,
       category,
     };
 
-    setClubs((prev) => [newClub, ...prev]);
-    resetForm();
-    window.alert(`Club "${newClub.name}" published.`);
+    if (assignPresident.trim() && isObjectId(assignPresident)) {
+      payload.president = assignPresident.trim();
+    }
+
+    try {
+      setIsPublishing(true);
+      const created = await createClub(payload);
+      setClubs((prev) => [created, ...prev]);
+      resetForm();
+      window.alert(`Club "${created.name}" published.`);
+    } catch (err) {
+      window.alert(`Failed to publish club: ${err.message}`);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
-  const onDelete = (id) => {
+  const onDelete = async (id) => {
     const club = clubs.find((c) => c.id === id);
     if (!club) return;
     const confirmed = window.confirm(
       `Delete "${club.name}"? This action cannot be undone.`
     );
-    if (confirmed) {
+    if (!confirmed) return;
+    try {
+      await deleteClub(id);
       setClubs((prev) => prev.filter((c) => c.id !== id));
+    } catch (err) {
+      window.alert(`Failed to delete club: ${err.message}`);
     }
   };
 
@@ -102,28 +137,48 @@ export default function AdminPage() {
     setEditForm({ name: "", president: "" });
   };
 
-  const onSaveEdit = (id) => {
-    setClubs((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, name: editForm.name, president: editForm.president }
-          : c
-      )
-    );
-    onCancelEdit();
+  const onSaveEdit = async (id) => {
+    const payload = {
+      name: editForm.name?.trim() || undefined,
+    };
+
+    if (isObjectId(editForm.president || "")) {
+      payload.president = editForm.president.trim();
+    }
+
+    try {
+      setIsSavingEdit(true);
+      const updated = await updateClub(id, payload);
+      setClubs((prev) => prev.map((c) => (c.id === id ? updated : c)));
+      onCancelEdit();
+    } catch (err) {
+      window.alert(`Failed to update club: ${err.message}`);
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
+
+  const filteredClubs = clubs.filter((club) => {
+    if (!searchTerm) return true;
+    const first = searchTerm.trim()[0];
+    if (!first) return true;
+    return club.name.charAt(0).toLowerCase() === first.toLowerCase();
+  });
+
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
       <div className="md:fixed md:left-0 md:top-0 md:h-full z-10 w-full md:w-64">
         <NavigationBar active="/admin" type="admin" />
       </div>
-      <div className="flex-1 md:ml-64 w-full max-w-full">
-        <StatisticsNavbar stats={adminStatistics} />
-        <div className="mx-2 md:mx-8 mb-4 mt-4 md:mt-0">
+      <div className="flex-1 w-full max-w-full pt-16 md:pt-0 md:ml-64">
+        <div className="px-4 md:px-8">
+          <StatisticsNavbar stats={adminStatistics} />
+        </div>
+        <div className="px-4 md:px-8 mb-4 mt-4 md:mt-0">
           <h2 className="text-xl font-semibold">Club Catalog</h2>
         </div>
 
-        <div className="mx-2 md:mx-8 bg-white rounded-lg shadow-md p-2 md:p-6">
+        <div className="mx-4 md:mx-8 bg-white rounded-2xl shadow-md p-3 md:p-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
               <input
@@ -145,8 +200,12 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-            <button className="text-blue-600 hover:text-blue-700 w-full md:w-auto">
-              Refresh
+            <button
+              className="text-blue-600 hover:text-blue-700 w-full md:w-auto"
+              onClick={loadClubs}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? "Refreshing..." : "Refresh"}
             </button>
           </div>
 
@@ -161,16 +220,32 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {clubs
-                  .filter((club) => {
-                    if (!searchTerm) return true;
-                    const first = searchTerm.trim()[0];
-                    if (!first) return true;
-                    return (
-                      club.name.charAt(0).toLowerCase() === first.toLowerCase()
-                    );
-                  })
-                  .map((club) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan="4" className="py-6 text-center text-gray-600">
+                      Loading clubs…
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan="4" className="py-6 text-center">
+                      <div className="text-gray-700 mb-3">{error}</div>
+                      <button
+                        className="text-blue-600 hover:text-blue-700"
+                        onClick={loadClubs}
+                      >
+                        Retry
+                      </button>
+                    </td>
+                  </tr>
+                ) : filteredClubs.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="py-6 text-center text-gray-600">
+                      No clubs to display.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredClubs.map((club) => (
                     <ClubRow
                       key={club.id}
                       club={club}
@@ -181,19 +256,20 @@ export default function AdminPage() {
                       onDelete={onDelete}
                       onSaveEdit={onSaveEdit}
                       onCancelEdit={onCancelEdit}
+                      isSaving={isSavingEdit}
                     />
-                  ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Create New Club Section */}
-        <div className="mx-2 md:mx-8 mb-4 mt-8">
+        <div className="px-4 md:px-8 mb-4 mt-8">
           <h2 className="text-xl font-semibold">Create New Club</h2>
         </div>
 
-        <SectionCard className="mx-2 md:mx-8">
+        <SectionCard className="mx-4 md:mx-8">
           <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
             Draft the club profile, assign the leadership team, and publish when
             you are ready for students to subscribe.
@@ -244,10 +320,10 @@ export default function AdminPage() {
                 onChange={(e) => setContactEmail(e.target.value)}
               />
             </FormField>
-            <FormField label="Assign President">
+            <FormField label="Assign President (User ObjectId)">
               <input
                 type="text"
-                placeholder="Search user or email"
+                placeholder="MongoDB ObjectId for user"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={assignPresident}
                 onChange={(e) => setAssignPresident(e.target.value)}
@@ -275,16 +351,16 @@ export default function AdminPage() {
                   "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
               },
               {
-                label: "Publish Club",
+                label: isPublishing ? "Publishing..." : "Publish Club",
                 onClick: publishClub,
                 className:
-                  "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
+                  "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50",
+                disabled: isPublishing,
               },
             ]}
           />
         </SectionCard>
 
-        {/* Create President Account Section */}
         <div className="mx-2 md:mx-8 mb-4 mt-8">
           <h2 className="text-xl font-semibold">Create President Account</h2>
           <span className="text-blue-600 text-sm ml-4">
@@ -317,10 +393,10 @@ export default function AdminPage() {
                 onChange={(e) => setPresId(e.target.value)}
               />
             </FormField>
-            <FormField label="University Email">
+            <FormField label="Email">
               <input
                 type="email"
-                placeholder="username@kfupm.edu.sa"
+                placeholder="email@gamil.com"
                 className="px-4 py-2 border rounded-lg w-full"
                 value={presEmail}
                 onChange={(e) => setPresEmail(e.target.value)}
@@ -374,7 +450,6 @@ export default function AdminPage() {
                   type="button"
                   className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
                   onClick={() => {
-                    // Generate a random password: 10-12 chars, mix of upper/lower/number/symbol
                     const chars =
                       "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
                     let pwd = "";
@@ -425,26 +500,24 @@ export default function AdminPage() {
                 className:
                   "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
                 onClick: () => {
-                  // Validation
                   if (!presEmail.endsWith("@kfupm.edu.sa")) {
                     window.alert(
-                      "❌ University email must end with @kfupm.edu.sa.\nExample: username@kfupm.edu.sa"
+                      "University email must end with @kfupm.edu.sa.\nExample: username@kfupm.edu.sa"
                     );
                     return;
                   }
                   if (!/^05\d{8}$/.test(presPhone)) {
                     window.alert(
-                      "❌ Phone number must be 10 digits, start with 05, and match the format: 05X-XXX-XXXX"
+                      "Phone number must be 10 digits, start with 05, and match the format: 05X-XXX-XXXX"
                     );
                     return;
                   }
                   if (!presClub) {
-                    window.alert("❌ Please select a club from the list.");
+                    window.alert("Please select a club from the list.");
                     return;
                   }
-                  // You can add more validation as needed
                   window.alert(
-                    `✅ Invitation sent!\n\nAccount for ${
+                    `Invitation sent!\n\nAccount for ${
                       presFullName || "(No Name)"
                     } has been created.\nA temporary password will be sent to: ${presEmail}\nAssigned club: ${presClub}\nPhone: ${presPhone}\nStart Date: ${
                       presStartDate || "(Not set)"

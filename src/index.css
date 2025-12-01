@@ -3,10 +3,10 @@
 
 @layer utilities {
   .primary-color {
-    color: #008540;
+    color: #145dff;
   }
   .secondary-color {
-    color: #d9dae4;
+    color: #e9f0ff;
   }
   .font-poppins {
     font-family: "Poppins", sans-serif;

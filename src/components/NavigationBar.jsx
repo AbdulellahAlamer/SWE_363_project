@@ -13,7 +13,9 @@ function NavigationBar({
   // Use md:fixed/md:left/md:top/md:h-full so "fixed" only applies on md+ screens.
   const containerClasses = `${
     fixed ? "md:fixed md:left-0 md:top-0 md:h-full" : "relative"
-  } ${open ? "md:w-64" : "md:w-20"} bg-white text-gray-700 p-4 flex-col transition-all duration-200 hidden md:flex`;
+  } ${
+    open ? "md:w-64" : "md:w-20"
+  } bg-white text-gray-700 p-4 flex-col transition-all duration-200 hidden md:flex`;
 
   const linkClass = (href, collapsed = !open) => {
     const base = "p-3 rounded-lg transition-colors flex items-center gap-3";
@@ -76,7 +78,11 @@ function NavigationBar({
 
   const logoutButton = ({ collapsed = false, className = "" } = {}) => (
     <button
-      onClick={() => (window.location.href = "/login")}
+      onClick={() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      }}
       className={`mt-auto w-full border border-red-600 text-red-600 font-medium py-3 px-4 rounded-lg hover:bg-red-100 transition-colors ${
         collapsed ? "flex items-center justify-center" : ""
       } ${className}`}
@@ -91,7 +97,9 @@ function NavigationBar({
       <div className="md:hidden">
         <div className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-slate-200 shadow-sm">
           <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-lg font-bold text-blue-600">{brandLabel}</span>
+            <span className="text-lg font-bold text-blue-600">
+              {brandLabel}
+            </span>
             <button
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileMenuOpen}
@@ -128,7 +136,9 @@ function NavigationBar({
             />
             <div className="fixed top-0 bottom-0 left-0 z-40 w-64 bg-white shadow-xl p-5 flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <span className="text-xl font-bold text-blue-600">{brandLabel}</span>
+                <span className="text-xl font-bold text-blue-600">
+                  {brandLabel}
+                </span>
                 <button
                   aria-label="Close menu"
                   onClick={() => setMobileMenuOpen(false)}
@@ -148,7 +158,11 @@ function NavigationBar({
       <aside className={containerClasses}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className={`text-blue-600 font-bold ${open ? "text-xl" : "text-lg"}`}>
+            <div
+              className={`text-blue-600 font-bold ${
+                open ? "text-xl" : "text-lg"
+              }`}
+            >
               {open ? brandLabel : brandLabel.charAt(0)}
             </div>
           </div>

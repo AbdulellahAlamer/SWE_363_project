@@ -63,9 +63,8 @@ export default function PostsPage() {
 
   return (
     <div className="flex">
-      <NavigationBar active="/posts" type="student" />
-
-+      <main className="ml-0 md:ml-64 flex-1 min-h-screen bg-gradient-to-b from-slate-50 to-white p-8">
+      <NavigationBar active="/posts" type="student" />+{" "}
+      <main className="ml-0 md:ml-64 flex-1 min-h-screen bg-gradient-to-b from-slate-50 to-white p-8 pt-16">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-slate-900 mb-8">Club Posts</h1>
 
@@ -76,7 +75,6 @@ export default function PostsPage() {
           </div>
         </div>
       </main>
-
       {editingPost && (
         <PopupForm
           method="PUT"
