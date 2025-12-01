@@ -3,51 +3,42 @@ import User from "../../models/user.js";
 // Change password controller
 const changePassword = async (req, res, next) => {
   try {
-    const { currentPassword, newPassword, confirmPassword } = req.body;
-    
+    const { newPassword, confirmPassword, userID } = req.body;
+    console.log("Change password request for user:", userID);
     // Validate request
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword || !userID) {
       return res.status(400).json({
-        status: 'error',
-        message: 'Missing required fields',
+        status: "error",
+        message: "Missing required fields",
         errors: {
-          required: ['currentPassword', 'newPassword', 'confirmPassword']
-        }
+          required: ["newPassword", "confirmPassword"],
+        },
       });
     }
 
     // Check if new passwords match
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
-        status: 'error',
-        message: 'New passwords do not match'
+        status: "error",
+        message: "New passwords do not match",
       });
     }
 
     // Check password length
     if (newPassword.length < 6) {
       return res.status(400).json({
-        status: 'error',
-        message: 'New password must be at least 6 characters long'
+        status: "error",
+        message: "New password must be at least 6 characters long",
       });
     }
 
     // Change password
-    const user = await User.findById(req.user.id).select('+password');
-    
+    const user = await User.findById(userID).select("+password");
+
     if (!user) {
       return res.status(400).json({
-        status: 'error',
-        message: 'User not found'
-      });
-    }
-
-    // Verify current password
-    const passwordMatch = await user.comparePassword(currentPassword);
-    if (!passwordMatch) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Current password is incorrect'
+        status: "error",
+        message: "User not found",
       });
     }
 
@@ -56,8 +47,8 @@ const changePassword = async (req, res, next) => {
     await user.save();
 
     return res.json({
-      status: 'success',
-      message: 'Password changed successfully'
+      status: "success",
+      message: "Password changed successfully",
     });
   } catch (error) {
     next(error);

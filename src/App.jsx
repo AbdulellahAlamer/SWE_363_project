@@ -29,7 +29,10 @@ const routes = {
 };
 
 const isAuthPath = (path) =>
-  path === "/" || path === "/login" || path === "/register" || path === "/reset-password";
+  path === "/" ||
+  path === "/login" ||
+  path === "/register" ||
+  path === "/reset-password";
 
 const normalizePath = (pathname) => {
   if (pathname === "/") return "/";

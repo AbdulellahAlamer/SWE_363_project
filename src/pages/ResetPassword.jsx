@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Button from "../components/Button.jsx";
+import { request } from "../api/client.js";
 
 function Field({
   label,
@@ -26,7 +27,7 @@ function Field({
 
 function ResetPassword() {
   const searchParams = new URLSearchParams(window.location.search);
-  const userId = searchParams.get("user_id") || 12345;
+  const userId = searchParams.get("userID");
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -58,22 +59,14 @@ function ResetPassword() {
     }
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      await request("/auth/changePassword", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
-          userId,
-
+          userID: userId,
           newPassword,
+          confirmPassword,
         }),
       });
-      console.log(response);
-
-      //   if (!response.ok) {
-      //     throw new Error("Request failed");
-      //   }
 
       setFeedback({
         type: "success",

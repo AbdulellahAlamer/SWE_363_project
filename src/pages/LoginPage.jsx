@@ -149,7 +149,7 @@ function LoginPage() {
       {showForgotModal && (
         <PopupForm
           method="POST"
-          endpoint="/api/auth/forgot-password"
+          endpoint="/auth/sendForgetPassword"
           fields={forgotFields}
           submitLabel="Reset password"
           onClose={() => setShowForgotModal(false)}

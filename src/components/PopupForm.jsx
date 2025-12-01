@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { API_BASE_URL } from "../api/client.js";
 
 const INPUT_TYPE_MAP = {
   string: "text",
@@ -117,7 +118,12 @@ function PopupForm({
     if (!endpoint) return;
     setStatus({ state: "submitting" });
     try {
-      const response = await fetch(endpoint, {
+      const url =
+        endpoint.startsWith("http") || endpoint.startsWith("https")
+          ? endpoint
+          : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
+
+      const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formValues),
