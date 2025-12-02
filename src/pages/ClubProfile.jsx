@@ -3,14 +3,101 @@ import NavigationBar from "../components/NavigationBar.jsx";
 import Button from "../components/Button.jsx";
 import EventCard from "../components/EventCardProf.jsx";
 import StatCard from "../components/StatCard.jsx";
-import { sampleEvents } from "../assets/data.js";
-import { fetchClub, fetchClubs } from "../api/clubs";
+import {
+  fetchClub,
+  fetchClubs,
+  fetchMyClubs,
+  subscribeToClub,
+  unsubscribeFromClub,
+} from "../api/clubs";
+import { fetchEvents } from "../api/events.js";
+
+const toUiStatus = (status, date) => {
+  const normalized = status ? String(status).toLowerCase() : "";
+  if (normalized === "open" || normalized === "upcoming") return "upcoming";
+  if (normalized === "closed" || normalized === "past") return "past";
+  if (date) {
+    const parsed = new Date(date);
+    if (!Number.isNaN(parsed.getTime()) && parsed.getTime() >= Date.now()) {
+      return "upcoming";
+    }
+  }
+  return "past";
+};
 
 export default function ClubProfile() {
   const [club, setClub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [subscribed, setSubscribed] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState(null);
+
+  const shareClub = async () => {
+    try {
+      const shareUrl = club?.id
+        ? `${window.location.origin}/club-profile?club=${encodeURIComponent(
+            club.id
+          )}`
+        : window.location.href;
+
+      const shareData = {
+        title: c.name || "KFUPM Club",
+        text: c.description
+          ? `Check out ${c.name}: ${c.description}`
+          : `Check out ${c.name}`,
+        url: shareUrl,
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        window.alert("Club link copied to clipboard.");
+        return;
+      }
+
+      window.prompt("Copy this link to share:", shareUrl);
+    } catch (err) {
+      window.alert("Unable to share this club right now.");
+      console.error("Share club failed:", err);
+    }
+  };
+
+  const syncSubscription = async (clubId) => {
+    if (!clubId) return;
+    try {
+      const mine = await fetchMyClubs();
+      const joined = mine.some((c) => c.id === clubId);
+      setSubscribed(joined);
+    } catch (err) {
+      // likely unauthenticated; leave as not subscribed
+      setSubscribed(false);
+    }
+  };
+
+  const loadEvents = async (clubId) => {
+    if (!clubId) {
+      setEvents([]);
+      return;
+    }
+    try {
+      setEventsError(null);
+      setEventsLoading(true);
+      const data = await fetchEvents({ clubId });
+      setEvents(data);
+    } catch (err) {
+      setEventsError(err.message || "Failed to load events");
+      setEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
 
   const loadClub = async () => {
     try {
@@ -18,16 +105,21 @@ export default function ClubProfile() {
       setLoading(true);
       const searchParams = new URLSearchParams(window.location.search);
       const clubId = searchParams.get("club");
+      let selectedClub = null;
 
       if (clubId) {
-        const data = await fetchClub(clubId);
-        setClub(data);
+        selectedClub = await fetchClub(clubId);
       } else {
         const all = await fetchClubs();
-        setClub(all[0] || null);
+        selectedClub = all[0] || null;
       }
+
+      setClub(selectedClub);
+      await syncSubscription(selectedClub?.id);
+      await loadEvents(selectedClub?.id);
     } catch (err) {
       setError(err.message || "Failed to load club");
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -37,6 +129,27 @@ export default function ClubProfile() {
     loadClub();
   }, []);
 
+  const toggleSubscription = async () => {
+    if (!club?.id || isSaving) return;
+    try {
+      setIsSaving(true);
+      const updated = subscribed
+        ? await unsubscribeFromClub(club.id)
+        : await subscribeToClub(club.id);
+      setClub(updated);
+      setSubscribed((s) => !s);
+    } catch (err) {
+      window.alert(
+        err.message ||
+          (subscribed
+            ? "Failed to unsubscribe from club."
+            : "Failed to subscribe to club.")
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const c = club || {
     name: "Club",
     initials: "CL",
@@ -45,8 +158,11 @@ export default function ClubProfile() {
   };
 
   const upcoming = useMemo(
-    () => sampleEvents.filter((e) => e.host === c.name && e.status === "open"),
-    [c.name]
+    () =>
+      events.filter(
+        (e) => (e.uiStatus || toUiStatus(e.status, e.date)) === "upcoming"
+      ),
+    [events]
   );
   const handleView = (clubId) => {
     // navigate to club-profile page
@@ -95,16 +211,22 @@ export default function ClubProfile() {
 
                 <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                   <Button
-                    variant={subscribed ? "default" : "primary"}
+                    variant={subscribed ? "ghost" : "primary"}
                     className="flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm"
-                    onClick={() => setSubscribed((s) => !s)}
+                    onClick={toggleSubscription}
+                    disabled={isSaving}
                   >
-                    {subscribed ? "Subscribed" : "Subscribe"}
+                    {isSaving
+                      ? "Saving..."
+                      : subscribed
+                        ? "Unsubscribe"
+                        : "Subscribe"}
                   </Button>
 
                   <Button
                     variant="secondary"
                     className="flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm"
+                    onClick={shareClub}
                   >
                     Share
                   </Button>
@@ -130,22 +252,43 @@ export default function ClubProfile() {
               <h2 className="text-lg sm:text-xl font-bold text-slate-900">
                 Upcoming Events
               </h2>
-              <button className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium">
+              <a
+                href={
+                  club?.id
+                    ? `/events?club=${encodeURIComponent(
+                        club.id
+                      )}&clubName=${encodeURIComponent(c.name)}`
+                    : "/events"
+                }
+                className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
                 View all
-              </button>
+              </a>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {upcoming.map((ev) => (
-                <EventCard key={ev.id} event={ev} />
-              ))}
+            {eventsError && (
+              <p className="text-xs sm:text-sm text-red-600 mb-2">
+                {eventsError}
+              </p>
+            )}
 
-              {upcoming.length === 0 && (
-                <p className="text-xs sm:text-sm text-slate-500 col-span-full text-center py-8">
-                  No upcoming events.
-                </p>
-              )}
-            </div>
+            {eventsLoading ? (
+              <p className="text-xs sm:text-sm text-slate-500">
+                Loading events...
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {upcoming.map((ev) => (
+                  <EventCard key={ev.id} event={ev} />
+                ))}
+
+                {upcoming.length === 0 && (
+                  <p className="text-xs sm:text-sm text-slate-500 col-span-full text-center py-8">
+                    No upcoming events.
+                  </p>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
