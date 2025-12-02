@@ -1,4 +1,3 @@
-// backend/controllers/user/getUserById.js
 import User from "../../models/user.js";
 
 const getUserById = async (req, res) => {
@@ -13,14 +12,6 @@ const getUserById = async (req, res) => {
       return res.status(404).json({
         status: "fail",
         message: "User not found",
-      });
-    }
-
-    // If not admin, only allow user to see themselves
-    if (req.user.role !== "admin" && req.user.id !== user.id) {
-      return res.status(403).json({
-        status: "fail",
-        message: "You are not allowed to view this user",
       });
     }
 

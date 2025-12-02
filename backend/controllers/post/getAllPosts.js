@@ -1,17 +1,35 @@
 import Post from "../../models/Post.js";
 
-// Controller to get all posts for a specific club
+// Controller to fetch posts. Optionally filter by club via params or query.
 const getAllPosts = async (req, res) => {
-	try {
-		const { clubId } = req.params;
-		if (!clubId) {
-			return res.status(400).json({ message: "Club ID is required." });
-		}
-		const posts = await Post.find({ club: clubId }).sort({ createdAt: -1 });
-		res.status(200).json(posts);
-	} catch (error) {
-		res.status(500).json({ message: "Failed to fetch posts.", error: error.message });
-	}
+  try {
+    const clubId =
+      req.params.clubId ||
+      req.query.clubId ||
+      req.query.club ||
+      req.query.club_id;
+
+    const filter = {};
+    if (clubId) {
+      filter.club = clubId;
+    }
+
+    const posts = await Post.find(filter)
+      .populate("club", "name category status")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      status: "success",
+      count: posts.length,
+      data: posts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch posts.",
+      error: error.message,
+    });
+  }
 };
 
 export default getAllPosts;

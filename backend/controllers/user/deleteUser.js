@@ -1,25 +1,13 @@
-// backend/controllers/user/deleteUser.js
 import User from "../../models/user.js";
 
 const deleteUser = async (req, res) => {
   try {
-    // Admin only
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({
-        status: "fail",
-        message: "You are not allowed to perform this action",
-      });
-    }
-
     const userId = req.params.id;
 
     const deletedUser = await User.findByIdAndUpdate(
       userId,
       { status: "Deleted" },
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     ).select("-password -__v -passwordResetToken -passwordResetExpires");
 
     if (!deletedUser) {

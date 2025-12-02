@@ -1,4 +1,3 @@
-// backend/controllers/user/searchUsers.js
 import User from "../../models/user.js";
 
 const searchUsers = async (req, res) => {

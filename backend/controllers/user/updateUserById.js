@@ -1,19 +1,9 @@
-// backend/controllers/user/updateUserById.js
 import User from "../../models/user.js";
 
 const updateUserById = async (req, res) => {
   try {
-    // Admin only
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({
-        status: "fail",
-        message: "You are not allowed to perform this action",
-      });
-    }
-
     const userId = req.params.id;
 
-    // Admin can update these fields
     const allowedFields = [
       "username",
       "name",
@@ -27,9 +17,7 @@ const updateUserById = async (req, res) => {
 
     const updates = {};
     Object.keys(req.body).forEach((field) => {
-      if (allowedFields.includes(field)) {
-        updates[field] = req.body[field];
-      }
+      if (allowedFields.includes(field)) updates[field] = req.body[field];
     });
 
     const updatedUser = await User.findByIdAndUpdate(userId, updates, {
