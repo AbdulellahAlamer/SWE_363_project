@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
-import { useRef } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
 import Button from "../components/Button.jsx";
 import SectionCard from "../components/SectionCard.jsx";
 import PostCard from "../components/PostCard.jsx";
-import EventCard from "../components/EventCardProf.jsx";
 import PopupForm from "../components/PopupForm.jsx";
-import { sampleEvents, adminClubSeeds, ClubsInfo } from "../assets/data.js";
+import { adminClubSeeds, ClubsInfo } from "../assets/data.js";
+import { fetchEvents } from "../api/events.js";
+import { isObjectId } from "../api/clubs.js";
 
 const club = adminClubSeeds[0];
 const stats = Object.entries(ClubsInfo[club.name] || {}).map(
@@ -53,15 +53,39 @@ const initialPosts = [
 ];
 
 export default function PresidentPage() {
-  const [selectedEvent, setSelectedEvent] = useState(sampleEvents[0].id);
+  const [selectedEvent, setSelectedEvent] = useState("");
   const [qrGenerated, setQrGenerated] = useState(false);
   const [qrValue, setQrValue] = useState("");
-  const [events, setEvents] = useState([...sampleEvents]);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "" });
   const [posts, setPosts] = useState(initialPosts);
   const [editingPost, setEditingPost] = useState(null);
   const qrRef = useRef(null);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setEventsError(null);
+        setEventsLoading(true);
+        const clubIdFilter =
+          club?.id && isObjectId(club.id) ? club.id : undefined;
+        const data = await fetchEvents({ clubId: clubIdFilter });
+        setEvents(data);
+        setSelectedEvent((data[0] && data[0].id) || "");
+      } catch (err) {
+        setEventsError(err.message || "Failed to load events");
+        setEvents([]);
+        setSelectedEvent("");
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
 
   const handlePostEdit = (postId) => {
     const post = posts.find((p) => p.id === postId);
@@ -173,27 +197,35 @@ export default function PresidentPage() {
                   value={selectedEvent}
                   onChange={(e) => setSelectedEvent(e.target.value)}
                 >
-                  {sampleEvents.map((ev) => (
-                    <option key={ev.id} value={ev.id}>
-                      {ev.title} @{" "}
-                      {new Date(ev.date).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                  {events.length === 0 ? (
+                    <option value="" disabled>
+                      {eventsLoading ? "Loading events..." : "No events found"}
                     </option>
-                  ))}
+                  ) : (
+                    events.map((ev) => (
+                      <option key={ev.id} value={ev.id}>
+                        {ev.title} @{" "}
+                        {ev.date
+                          ? new Date(ev.date).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "TBA"}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
               <Button
                 className="w-full bg-blue-600 text-white"
                 onClick={() => {
-                  const event = sampleEvents.find(
-                    (ev) => ev.id === selectedEvent
-                  );
+                  const event = events.find((ev) => ev.id === selectedEvent);
                   const value = event
-                    ? `Event: ${event.title}\nDate: ${new Date(
+                    ? `Event: ${event.title}\nDate: ${
                         event.date
-                      ).toLocaleString()}\nClub: ${event.host}`
+                          ? new Date(event.date).toLocaleString()
+                          : "Date TBA"
+                      }\nClub: ${event.host}`
                     : "";
                   setQrValue(value);
                   setQrGenerated(true);
@@ -248,114 +280,126 @@ export default function PresidentPage() {
           <h2 className="text-2xl font-bold text-slate-900 mb-4">
             Manage Events
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {events.slice(0, 3).map((ev) => (
-              <div
-                key={ev.id}
-                className="flex flex-col bg-white rounded-2xl shadow p-6"
-              >
-                <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
-                {editingId === ev.id ? (
-                  <>
-                    <input
-                      className="text-lg font-semibold text-slate-900 mb-1 border rounded p-1 mb-2"
-                      value={editForm.title}
-                      onChange={(e) =>
-                        setEditForm((f) => ({ ...f, title: e.target.value }))
-                      }
-                    />
-                    <textarea
-                      className="text-slate-500 text-sm mb-2 border rounded p-1"
-                      value={editForm.description}
-                      onChange={(e) =>
-                        setEditForm((f) => ({
-                          ...f,
-                          description: e.target.value,
-                        }))
-                      }
-                    />
-                  </>
-                ) : (
-                  <>
-                    <div className="text-lg font-semibold text-slate-900 mb-1">
-                      {ev.title}
-                    </div>
-                    <div className="text-slate-500 text-sm mb-2">
-                      {ev.description}
-                    </div>
-                  </>
-                )}
-                <div className="text-xs text-slate-400 mb-2">
-                  {new Date(ev.date).toLocaleString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}{" "}
-                  · {ev.registered} registered
-                </div>
-                <div className="flex gap-2 mb-2">
+          {eventsError && (
+            <p className="text-sm text-red-600 mb-3">{eventsError}</p>
+          )}
+          {eventsLoading ? (
+            <p className="text-sm text-slate-500">Loading events...</p>
+          ) : events.length === 0 ? (
+            <p className="text-sm text-slate-500">No events found.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {events.slice(0, 3).map((ev) => (
+                <div
+                  key={ev.id}
+                  className="flex flex-col bg-white rounded-2xl shadow p-6"
+                >
+                  <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
                   {editingId === ev.id ? (
                     <>
-                      <Button
-                        variant="secondary"
-                        className="w-1/2"
-                        onClick={() => {
-                          setEvents(
-                            events.map((e) =>
-                              e.id === ev.id ? { ...e, ...editForm } : e
-                            )
-                          );
-                          setEditingId(null);
-                        }}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-1/2 text-gray-600 border-gray-200"
-                        onClick={() => setEditingId(null)}
-                      >
-                        Cancel
-                      </Button>
+                      <input
+                        className="text-lg font-semibold text-slate-900 mb-1 border rounded p-1 mb-2"
+                        value={editForm.title}
+                        onChange={(e) =>
+                          setEditForm((f) => ({ ...f, title: e.target.value }))
+                        }
+                      />
+                      <textarea
+                        className="text-slate-500 text-sm mb-2 border rounded p-1"
+                        value={editForm.description}
+                        onChange={(e) =>
+                          setEditForm((f) => ({
+                            ...f,
+                            description: e.target.value,
+                          }))
+                        }
+                      />
                     </>
                   ) : (
                     <>
-                      <Button
-                        variant="secondary"
-                        className="w-1/2"
-                        onClick={() => {
-                          setEditingId(ev.id);
-                          setEditForm({
-                            title: ev.title,
-                            description: ev.description,
-                          });
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-1/2 text-red-600 border-red-200"
-                        onClick={() =>
-                          setEvents(events.filter((e) => e.id !== ev.id))
-                        }
-                      >
-                        Delete
-                      </Button>
+                      <div className="text-lg font-semibold text-slate-900 mb-1">
+                        {ev.title}
+                      </div>
+                      <div className="text-slate-500 text-sm mb-2">
+                        {ev.description}
+                      </div>
                     </>
                   )}
+                  <div className="text-xs text-slate-400 mb-2">
+                    {ev.date
+                      ? new Date(ev.date).toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "Date TBA"}{" "}
+                    - {ev.registered || 0} registered
+                  </div>
+                  <div className="flex gap-2 mb-2">
+                    {editingId === ev.id ? (
+                      <>
+                        <Button
+                          variant="secondary"
+                          className="w-1/2"
+                          onClick={() => {
+                            setEvents((prev) =>
+                              prev.map((e) =>
+                                e.id === ev.id ? { ...e, ...editForm } : e
+                              )
+                            );
+                            setEditingId(null);
+                          }}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-1/2 text-gray-600 border-gray-200"
+                          onClick={() => setEditingId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="secondary"
+                          className="w-1/2"
+                          onClick={() => {
+                            setEditingId(ev.id);
+                            setEditForm({
+                              title: ev.title,
+                              description: ev.description,
+                            });
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-1/2 text-red-600 border-red-200"
+                          onClick={() =>
+                            setEvents((prev) =>
+                              prev.filter((e) => e.id !== ev.id)
+                            )
+                          }
+                        >
+                          Delete
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full border border-blue-200 text-blue-600"
+                    onClick={() => alert("joined students will be notified")}
+                  >
+                    Notify By email
+                  </Button>
                 </div>
-                <Button
-                  variant="ghost"
-                  className="w-full border border-blue-200 text-blue-600"
-                  onClick={() => alert("joined students will be notified")}
-                >
-                  Notify By email
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-
         {/* Manage Posts */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">

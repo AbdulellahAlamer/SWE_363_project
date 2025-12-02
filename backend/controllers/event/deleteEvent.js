@@ -1,4 +1,4 @@
-import Event from "../../models/Event";
+import Event from "../../models/Event.js";
 // Controller to delete an event by its ID
  export const deleteEvent = async (req, res) => {
     try {
