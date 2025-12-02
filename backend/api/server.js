@@ -16,6 +16,7 @@ import authRoutes from "../routes/auth.routes.js";
 import userRoutes from "../routes/user.routes.js";
 import clubRoutes from "../routes/club.routes.js";
 import postRoutes from "../routes/post.routes.js";
+import eventRoutes from "../routes/event.routes.js";
 
 dotenv.config();
 
@@ -59,6 +60,9 @@ app.use(`${config.app.apiPrefix}/clubs`, clubRoutes);
 
 // Post routes
 app.use(`${config.app.apiPrefix}/posts`, postRoutes);
+
+// Event routes
+app.use(`${config.app.apiPrefix}/events`, eventRoutes);
 
 /* ==========================
         404 HANDLERS
@@ -151,3 +155,4 @@ if (process.argv[1] === __filename) {
 }
 
 export default app;
+

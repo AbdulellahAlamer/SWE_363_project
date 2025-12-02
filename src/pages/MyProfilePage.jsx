@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
-import AttendedEventsFallback, { certificates as fallbackCertificates } from "../assets/data.js";
+import { certificates as fallbackCertificates } from "../assets/data.js";
 import { fetchMyClubs } from "../api/clubs";
 import { fetchCurrentUser, updateCurrentUser } from "../api/users";
 import { getStoredSession } from "../api/auth";
+import { fetchEvents } from "../api/events.js";
 
 export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
@@ -19,6 +20,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [attendedEvents, setAttendedEvents] = useState([]);
+  const [eventsError, setEventsError] = useState(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -33,9 +36,10 @@ export default function ProfilePage() {
     try {
       setError(null);
       setLoading(true);
-      const [user, clubs] = await Promise.all([
-        fetchCurrentUser(),
+      const user = await fetchCurrentUser();
+      const [clubs, events] = await Promise.all([
         fetchMyClubs(),
+        fetchEvents({ userId: user.id }),
       ]);
       setProfileData({
         name: user.name || "Student",
@@ -52,8 +56,12 @@ export default function ProfilePage() {
         profileImage: user.photoUrl || null,
       });
       setJoinedClubs(clubs || []);
+      setAttendedEvents(events || []);
+      setEventsError(null);
     } catch (err) {
       setError(err.message || "Failed to load profile");
+      setAttendedEvents([]);
+      setEventsError("Unable to load attended events right now.");
     } finally {
       setLoading(false);
     }
@@ -138,7 +146,9 @@ export default function ProfilePage() {
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return "Date TBA";
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "Date TBA";
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
@@ -154,17 +164,11 @@ export default function ProfilePage() {
   );
 
   const userEvents = useMemo(() => {
-    // If backend ever adds attended events per user, read from there first
-    const rawAttended =
-      profileData?.raw?.attendedEvents ||
-      profileData?.raw?.events ||
-      [];
-    if (Array.isArray(rawAttended) && rawAttended.length > 0) {
-      return rawAttended;
+    if (Array.isArray(attendedEvents)) {
+      return attendedEvents;
     }
-    // Fallback: static list to avoid changing when subscriptions change
-    return AttendedEventsFallback;
-  }, [profileData]);
+    return [];
+  }, [attendedEvents]);
 
   const userCertificates = useMemo(
     () =>
@@ -178,7 +182,7 @@ export default function ProfilePage() {
   const effectiveCertificates =
     userCertificates.length > 0 ? userCertificates : fallbackCertificates;
 
-  const effectiveEvents = userEvents.length > 0 ? userEvents : AttendedEventsFallback;
+  const effectiveEvents = userEvents.length > 0 ? userEvents : [];
 
   if (loading) {
     return (
@@ -262,26 +266,41 @@ export default function ProfilePage() {
               Attended Events
             </h2>
             <span className="text-xs sm:text-sm text-blue-600 font-medium">
-              {effectiveEvents.length} events
-            </span>
-          </div>
+          {effectiveEvents.length} events
+        </span>
+      </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {effectiveEvents.map((event) => (
-              <div
-                key={event.id}
-                className="rounded-xl bg-white p-4 sm:p-5 shadow-md hover:shadow-lg transition-shadow"
-              >
-                <div className="h-20 sm:h-24 mb-3 sm:mb-4 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200"></div>
-                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1">
-                  {event.title}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  {formatDate(event.date)} - {event.club}
-                </p>
-              </div>
-            ))}
-          </div>
+      {eventsError && (
+        <p className="text-xs sm:text-sm text-red-600 mb-3">{eventsError}</p>
+      )}
+
+      {effectiveEvents.length === 0 ? (
+        <p className="text-xs sm:text-sm text-slate-500">
+          No attended events yet.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {effectiveEvents.map((event) => (
+            <div
+              key={event.id || event._id || event.title}
+              className="rounded-xl bg-white p-4 sm:p-5 shadow-md hover:shadow-lg transition-shadow"
+            >
+              <div className="h-20 sm:h-24 mb-3 sm:mb-4 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200"></div>
+              <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1">
+                {event.title}
+              </h3>
+              <p className="text-xs text-slate-500">
+                {event.date ? formatDate(event.date) : "Date TBA"} -{" "}
+                {event.club?.name ||
+                  event.club ||
+                  event.host ||
+                  event.hostName ||
+                  "Club"}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
         </div>
 
         {/* Joined Clubs */}

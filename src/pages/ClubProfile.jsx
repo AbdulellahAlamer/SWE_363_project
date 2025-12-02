@@ -3,7 +3,6 @@ import NavigationBar from "../components/NavigationBar.jsx";
 import Button from "../components/Button.jsx";
 import EventCard from "../components/EventCardProf.jsx";
 import StatCard from "../components/StatCard.jsx";
-import { sampleEvents } from "../assets/data.js";
 import {
   fetchClub,
   fetchClubs,
@@ -11,6 +10,20 @@ import {
   subscribeToClub,
   unsubscribeFromClub,
 } from "../api/clubs";
+import { fetchEvents } from "../api/events.js";
+
+const toUiStatus = (status, date) => {
+  const normalized = status ? String(status).toLowerCase() : "";
+  if (normalized === "open" || normalized === "upcoming") return "upcoming";
+  if (normalized === "closed" || normalized === "past") return "past";
+  if (date) {
+    const parsed = new Date(date);
+    if (!Number.isNaN(parsed.getTime()) && parsed.getTime() >= Date.now()) {
+      return "upcoming";
+    }
+  }
+  return "past";
+};
 
 export default function ClubProfile() {
   const [club, setClub] = useState(null);
@@ -18,6 +31,9 @@ export default function ClubProfile() {
   const [error, setError] = useState(null);
   const [subscribed, setSubscribed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState(null);
 
   const shareClub = async () => {
     try {
@@ -65,25 +81,45 @@ export default function ClubProfile() {
     }
   };
 
+  const loadEvents = async (clubId) => {
+    if (!clubId) {
+      setEvents([]);
+      return;
+    }
+    try {
+      setEventsError(null);
+      setEventsLoading(true);
+      const data = await fetchEvents({ clubId });
+      setEvents(data);
+    } catch (err) {
+      setEventsError(err.message || "Failed to load events");
+      setEvents([]);
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
   const loadClub = async () => {
     try {
       setError(null);
       setLoading(true);
       const searchParams = new URLSearchParams(window.location.search);
       const clubId = searchParams.get("club");
+      let selectedClub = null;
 
       if (clubId) {
-        const data = await fetchClub(clubId);
-        setClub(data);
-        await syncSubscription(data?.id);
+        selectedClub = await fetchClub(clubId);
       } else {
         const all = await fetchClubs();
-        const first = all[0] || null;
-        setClub(first);
-        await syncSubscription(first?.id);
+        selectedClub = all[0] || null;
       }
+
+      setClub(selectedClub);
+      await syncSubscription(selectedClub?.id);
+      await loadEvents(selectedClub?.id);
     } catch (err) {
       setError(err.message || "Failed to load club");
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -122,8 +158,11 @@ export default function ClubProfile() {
   };
 
   const upcoming = useMemo(
-    () => sampleEvents.filter((e) => e.host === c.name && e.status === "open"),
-    [c.name]
+    () =>
+      events.filter(
+        (e) => (e.uiStatus || toUiStatus(e.status, e.date)) === "upcoming"
+      ),
+    [events]
   );
   const handleView = (clubId) => {
     // navigate to club-profile page
@@ -227,17 +266,29 @@ export default function ClubProfile() {
               </a>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-              {upcoming.map((ev) => (
-                <EventCard key={ev.id} event={ev} />
-              ))}
+            {eventsError && (
+              <p className="text-xs sm:text-sm text-red-600 mb-2">
+                {eventsError}
+              </p>
+            )}
 
-              {upcoming.length === 0 && (
-                <p className="text-xs sm:text-sm text-slate-500 col-span-full text-center py-8">
-                  No upcoming events.
-                </p>
-              )}
-            </div>
+            {eventsLoading ? (
+              <p className="text-xs sm:text-sm text-slate-500">
+                Loading events...
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {upcoming.map((ev) => (
+                  <EventCard key={ev.id} event={ev} />
+                ))}
+
+                {upcoming.length === 0 && (
+                  <p className="text-xs sm:text-sm text-slate-500 col-span-full text-center py-8">
+                    No upcoming events.
+                  </p>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
