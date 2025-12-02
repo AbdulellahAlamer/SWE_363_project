@@ -146,9 +146,8 @@ const startServer = async () => {
 // Auto-start if this file is run directly
 const __filename = fileURLToPath(import.meta.url);
 
-if (process.env.NODE_ENV !== "test") {
+if (process.argv[1] === __filename) {
   startServer();
 }
 
 export default app;
-
