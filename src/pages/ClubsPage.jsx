@@ -3,6 +3,7 @@ import {
   fetchClubs,
   fetchMyClubs,
   subscribeToClub,
+  unsubscribeFromClub,
 } from "../api/clubs";
 import ClubCard from "../components/ClubCard";
 import Button from "../components/Button";
@@ -64,20 +65,37 @@ export default function ClubsPage() {
     loadJoined();
   }, []);
 
-  const handleJoin = async (club) => {
+  const handleToggleSubscription = async (club) => {
     try {
-      const updated = await subscribeToClub(club.id);
+      const isJoined = joinedIds.has(club.id);
+      const updated = isJoined
+        ? await unsubscribeFromClub(club.id)
+        : await subscribeToClub(club.id);
+
       setJoinedIds((prev) => {
         const next = new Set(prev);
-        next.add(club.id);
+        if (isJoined) {
+          next.delete(club.id);
+        } else {
+          next.add(club.id);
+        }
         return next;
       });
-      setClubs((prev) =>
-        prev.map((c) => (c.id === club.id ? updated : c))
-      );
-      setJoinedClubPopup(club);
+
+      setClubs((prev) => prev.map((c) => (c.id === club.id ? updated : c)));
+
+      if (!isJoined) {
+        setJoinedClubPopup(club);
+      } else {
+        setJoinedClubPopup(null);
+      }
     } catch (err) {
-      window.alert(err.message || "Failed to subscribe to club.");
+      window.alert(
+        err.message ||
+          (joinedIds.has(club.id)
+            ? "Failed to unsubscribe from club."
+            : "Failed to subscribe to club.")
+      );
     }
   };
 
@@ -142,7 +160,7 @@ export default function ClubsPage() {
                   key={club.id}
                   club={club}
                   isJoined={joinedIds.has(club.id)}
-                  onJoin={() => handleJoin(club)}
+                  onToggle={() => handleToggleSubscription(club)}
                   onView={handleView} // pass handler; ClubCard will call with id
                 />
               ))}

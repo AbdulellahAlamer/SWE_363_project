@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { sampleEvents } from "../assets/data.js";
 import NavigationBar from "../components/NavigationBar.jsx";
 import EventCard from "../components/EventCard.jsx";
@@ -16,21 +16,46 @@ function normalizeStatus(status) {
 }
 
 export default function EventsPage() {
+  const params = useMemo(
+    () => new URLSearchParams(window.location.search),
+    []
+  );
+  const clubIdParam = params.get("club") || params.get("clubId");
+  const clubNameParam = params.get("clubName");
   const [filter, setFilter] = useState("upcoming");
 
+  const matchesClubFilter = (event) => {
+    if (!clubIdParam && !clubNameParam) return true;
+
+    const hostName = (event.host || "").toLowerCase();
+    const hostId = event.hostId || event.clubId || event.club;
+    const targetName = (clubNameParam || "").toLowerCase();
+
+    if (clubIdParam && hostId && String(hostId) === String(clubIdParam)) {
+      return true;
+    }
+    if (targetName && hostName === targetName) {
+      return true;
+    }
+
+    return false;
+  };
+
   // normalize and enrich events (map "open" -> "upcoming", "closed" -> "past")
-  const normalized = (sampleEvents || []).map((e) => ({
-    ...e,
-    description: e.desc || e.description || "",
-    dateLabel:
-      e.dateLabel ||
-      (e.date
-        ? new Date(e.date)
-            .toLocaleString(undefined, { month: "short", day: "numeric" })
-            .toUpperCase()
-        : ""),
-    uiStatus: normalizeStatus(e.status),
-  }));
+  const normalized = (sampleEvents || [])
+    .filter(matchesClubFilter)
+    .map((e) => ({
+      ...e,
+      description: e.desc || e.description || "",
+      dateLabel:
+        e.dateLabel ||
+        (e.date
+          ? new Date(e.date)
+              .toLocaleString(undefined, { month: "short", day: "numeric" })
+              .toUpperCase()
+          : ""),
+      uiStatus: normalizeStatus(e.status),
+    }));
 
   const filtered = normalized.filter((e) =>
     filter === "all" ? true : e.uiStatus === filter
