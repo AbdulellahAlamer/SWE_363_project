@@ -6,7 +6,7 @@ import FormField from "../components/FormField.jsx";
 import ClubRow from "../components/ClubRow.jsx";
 import LogoUpload from "../components/LogoUpload.jsx";
 import ButtonGroup from "../components/ButtonGroup.jsx";
-import { adminStatistics } from "../assets/data.js";
+import { adminStatistics as initialAdminStatistics } from "../assets/data.js";
 import {
   fetchClubs,
   createClub,
@@ -14,9 +14,11 @@ import {
   deleteClub,
   isObjectId,
 } from "../api/clubs";
+import { fetchEvents } from "../api/events";
 
 export default function AdminPage() {
   const [clubs, setClubs] = useState([]);
+  const [adminStatistics, setAdminStatistics] = useState(initialAdminStatistics);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -54,8 +56,21 @@ export default function AdminPage() {
     try {
       setIsRefreshing(true);
       setError(null);
-      const data = await fetchClubs();
-      setClubs(data);
+      const clubsData = await fetchClubs();
+      setClubs(clubsData);
+      const eventsData = await fetchEvents();
+      // Update admin statistics with true club and event count
+      setAdminStatistics((prevStats) =>
+        prevStats.map((stat) => {
+          if (stat.label === "Total Clubs") {
+            return { ...stat, value: String(clubsData.length) };
+          }
+          if (stat.label === "Upcoming Events") {
+            return { ...stat, value: String(eventsData.length) };
+          }
+          return stat;
+        })
+      );
     } catch (err) {
       setError(err.message || "Failed to load clubs");
     } finally {

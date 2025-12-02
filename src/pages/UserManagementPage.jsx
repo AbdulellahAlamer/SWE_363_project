@@ -17,6 +17,12 @@ const addUserFields = [
     placeholder: "name@kfupm.edu.sa",
   },
   {
+    name: "password",
+    label: "Password",
+    dataType: "password",
+    placeholder: "Set a password",
+  },
+  {
     name: "role",
     label: "Role",
     dataType: "string",
@@ -91,10 +97,52 @@ export default function UserManagementPage() {
   });
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Add user handler (remains local for now)
-  function handleAddUser(formData) {
-    // ...existing code...
-    setShowForm(false);
+  // Add user handler (calls backend)
+  async function handleAddUser(formData) {
+    try {
+      // Map form fields to backend expected fields
+      const payload = {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      };
+      const res = await request("/api/v1/users", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      // Add new user to local state
+      const user = res.data?.user || res.user || res;
+      setUsers((prev) => [
+        {
+          _id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          role:
+            user.role === "student"
+              ? "Student"
+              : user.role === "president"
+              ? "Club President"
+              : "Administrator",
+          joined: user.createdAt
+            ? new Date(user.createdAt).toLocaleString("default", {
+                month: "short",
+                year: "numeric",
+              })
+            : "",
+          initials: (user.name || "?")
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+        },
+        ...prev,
+      ]);
+      setShowForm(false);
+    } catch (err) {
+      alert("Failed to add user: " + (err.message || "Unknown error"));
+    }
   }
 
   // Edit user handler (calls backend)

@@ -5,7 +5,18 @@ const getAllUsers = async (req, res) => {
     const { status, role, search } = req.query;
     const filter = {};
 
-    if (status) filter.status = status;
+    if (status) {
+      if (status.toLowerCase() === "active") {
+        // Exclude all case variations of 'deleted'
+        filter.$or = [
+          { status: { $regex: /^active$/i } },
+          { status: { $exists: false } },
+        ];
+        filter.status = { $not: /^deleted$/i };
+      } else {
+        filter.status = { $regex: new RegExp(`^${status}$`, "i") };
+      }
+    }
     if (role) filter.role = role;
     if (search) {
       const regex = new RegExp(search, "i");
