@@ -1,6 +1,6 @@
 import Button from "./Button";
 
-function ClubCard({ club, onJoin, onView, isJoined = false }) {
+function ClubCard({ club, onToggle, onView, isJoined = false }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-600 transition flex flex-col">
       <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center text-white text-2xl font-bold mb-4">
@@ -27,13 +27,15 @@ function ClubCard({ club, onJoin, onView, isJoined = false }) {
 
       <div className="flex gap-2 mt-auto">
         <Button
-          variant={isJoined ? "default" : "primary"}
-          className={`flex-1 ${isJoined ? "opacity-80 cursor-default" : ""}`}
-          onClick={() => !isJoined && onJoin?.(club)}
+          variant={isJoined ? "ghost" : "primary"}
+          className="flex-1"
+          onClick={() => onToggle?.(club)}
           aria-pressed={isJoined}
-          aria-label={isJoined ? `Registered to ${club.name}` : `Join ${club.name}`}
+          aria-label={
+            isJoined ? `Unsubscribe from ${club.name}` : `Subscribe to ${club.name}`
+          }
         >
-          {isJoined ? "Registered" : "Join"}
+          {isJoined ? "Unsubscribe" : "Subscribe"}
         </Button>
 
         <Button

@@ -1,16 +1,7 @@
-// backend/controllers/user/getAllUsers.js
 import User from "../../models/user.js";
 
 const getAllUsers = async (req, res) => {
   try {
-    // Admin only
-    if (!req.user || req.user.role !== "admin") {
-      return res.status(403).json({
-        status: "fail",
-        message: "You are not allowed to perform this action",
-      });
-    }
-
     const { status, role, search } = req.query;
     const filter = {};
 

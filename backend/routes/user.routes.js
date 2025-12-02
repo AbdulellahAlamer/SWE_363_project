@@ -7,35 +7,28 @@ import updateUserById from "../controllers/user/updateUserById.js";
 import deleteUser from "../controllers/user/deleteUser.js";
 import searchUsers from "../controllers/user/searchUsers.js";
 import protectRoute from "../middleware/protectRoute.js";
+import restrictTo from "../middleware/restrictTo.js";
 
 const router = express.Router();
 
-// All /users routes require authentication
+// All routes below require authentication
 router.use(protectRoute);
 
-/**
- * /api/v1/users
- */
-
-// Get my profile
+// My profile
 router.get("/me", getMe);
-
-// Update my profile
 router.patch("/me", updateMe);
 
-// Search users: /users/search?q=...
-router.get("/search", searchUsers);
+// Search users (admin only)
+router.get("/search", restrictTo("admin"), searchUsers);
 
 // Get all users (admin)
-router.get("/", getAllUsers);
+router.get("/", restrictTo("admin"), getAllUsers);
 
-// Get user by id
-router.get("/:id", getUserById);
-
-// Update user by id (admin)
-router.patch("/:id", updateUserById);
-
-// Soft delete user (admin)
-router.delete("/:id", deleteUser);
+// Admin operations on specific user
+router
+  .route("/:id")
+  .get(restrictTo("admin"), getUserById)
+  .patch(restrictTo("admin"), updateUserById)
+  .delete(restrictTo("admin"), deleteUser);
 
 export default router;

@@ -1,12 +1,9 @@
-// backend/controllers/user/updateMe.js
 import User from "../../models/user.js";
 
 const filterAllowedFields = (obj, allowedFields) => {
   const filtered = {};
   Object.keys(obj).forEach((key) => {
-    if (allowedFields.includes(key)) {
-      filtered[key] = obj[key];
-    }
+    if (allowedFields.includes(key)) filtered[key] = obj[key];
   });
   return filtered;
 };
@@ -20,7 +17,6 @@ const updateMe = async (req, res) => {
       });
     }
 
-    // Prevent password updates here
     if (req.body.password || req.body.passwordConfirm) {
       return res.status(400).json({
         status: "fail",
@@ -28,7 +24,6 @@ const updateMe = async (req, res) => {
       });
     }
 
-    // Only allow these fields to be changed by the user
     const allowedFields = [
       "username",
       "name",

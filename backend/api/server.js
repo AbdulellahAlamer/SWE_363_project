@@ -15,6 +15,7 @@ import { connect } from "../config/db.js";
 import authRoutes from "../routes/auth.routes.js";
 import userRoutes from "../routes/user.routes.js";
 import clubRoutes from "../routes/club.routes.js";
+import postRoutes from "../routes/post.routes.js";
 
 dotenv.config();
 
@@ -55,6 +56,9 @@ app.use(`${config.app.apiPrefix}/users`, userRoutes);
 
 // Club routes (protected)
 app.use(`${config.app.apiPrefix}/clubs`, clubRoutes);
+
+// Post routes
+app.use(`${config.app.apiPrefix}/posts`, postRoutes);
 
 /* ==========================
         404 HANDLERS
@@ -141,6 +145,7 @@ const startServer = async () => {
 
 // Auto-start if this file is run directly
 const __filename = fileURLToPath(import.meta.url);
+
 if (process.argv[1] === __filename) {
   startServer();
 }
