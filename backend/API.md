@@ -214,6 +214,49 @@ Authorization: Bearer <token>
 
 All endpoints require authentication. Admin-only endpoints require role="admin".
 
+### Create User (Admin only)
+```http
+POST /users
+Authorization: Bearer <token>
+```
+
+**Request Body:**
+```json
+{
+  "name": "Jane Smith",
+  "email": "jane@example.com",
+  "password": "securePass123",
+  "role": "student",
+  "status": "active",
+  "major": "COE",
+  "Join_Year": "2022",
+  "photo_URL": "https://example.com/avatar.png"
+}
+```
+
+**Notes:**
+- `name`, `email`, and `password` are required.
+- `role` accepts `student`, `admin`, or `president` (defaults to `student`).
+- `status` accepts `active`, `inactive`, `suspended`, `Deleted` (defaults to `active`).
+
+**Response:** `201 Created`
+```json
+{
+  "status": "success",
+  "message": "User created successfully",
+  "data": {
+    "user": {
+      "id": "user_id",
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "role": "student",
+      "status": "active",
+      "createdAt": "2025-01-31T12:00:00.000Z"
+    }
+  }
+}
+```
+
 ### List Users (Admin only)
 ```http
 GET /users

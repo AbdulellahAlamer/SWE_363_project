@@ -6,6 +6,7 @@ import updateMe from "../controllers/user/updateMe.js";
 import updateUserById from "../controllers/user/updateUserById.js";
 import deleteUser from "../controllers/user/deleteUser.js";
 import searchUsers from "../controllers/user/searchUsers.js";
+import createUser from "../controllers/user/createUser.js";
 import protectRoute from "../middleware/protectRoute.js";
 import restrictTo from "../middleware/restrictTo.js";
 
@@ -21,8 +22,11 @@ router.patch("/me", updateMe);
 // Search users (admin only)
 router.get("/search", restrictTo("admin"), searchUsers);
 
-// Get all users (admin)
-router.get("/", restrictTo("admin"), getAllUsers);
+// Create user & list users (admin)
+router
+  .route("/")
+  .post(restrictTo("admin"), createUser)
+  .get(restrictTo("admin"), getAllUsers);
 
 // Admin operations on specific user
 router
