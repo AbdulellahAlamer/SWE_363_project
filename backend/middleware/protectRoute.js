@@ -5,6 +5,7 @@ import config from "../config/config.js";
 // Base auth guard: verifies JWT, loads user, and attaches it to req.user
 const protectRoute = async (req, res, next) => {
   try {
+    //next();
     // Get token from cookie or Authorization header
     let token = req.cookies?.jwt;
 

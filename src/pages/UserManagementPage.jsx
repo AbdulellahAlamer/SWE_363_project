@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
 import PopupForm from "../components/PopupForm.jsx";
-import { userManagementUsers } from "../assets/data.js";
+import { request } from "../api/client.js";
 
 const addUserFields = [
   {
@@ -43,7 +43,44 @@ const addUserFields = [
 
 export default function UserManagementPage() {
   const [showForm, setShowForm] = useState(false);
-  const [users, setUsers] = useState(userManagementUsers);
+  const [users, setUsers] = useState([]);
+    useEffect(() => {
+      async function fetchUsers() { 
+        try {
+          const res = await request("/users?status=active");
+          setUsers(
+            (res.data || [])
+              .filter(user => user.status !== "Deleted")
+              .map((user) => ({
+                _id: user._id, // Ensure ID is present for backend requests
+                name: user.name,
+                email: user.email,
+                role:
+                  user.role === "student"
+                    ? "Student"
+                    : user.role === "president"
+                    ? "Club President"
+                    : "Administrator",
+                joined: user.createdAt
+                  ? new Date(user.createdAt).toLocaleString("default", {
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "",
+                initials: (user.name || "?")
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2),
+              }))
+          );
+        } catch (err) {
+          setUsers([]);
+        }
+      }
+      fetchUsers();
+    }, []);
   const [editIndex, setEditIndex] = useState(null);
   const [editUser, setEditUser] = useState({
     name: "",
@@ -54,34 +91,55 @@ export default function UserManagementPage() {
   });
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Add user handler
+  // Add user handler (remains local for now)
   function handleAddUser(formData) {
-    // formData: { fullName, email, role, club, isActive }
-    const initials = (formData.fullName || "?")
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-    setUsers([
-      ...users,
-      {
-        name: formData.fullName,
-        email: formData.email,
-        role:
-          formData.role === "student"
-            ? "Student"
-            : formData.role === "president"
-            ? "Club President"
-            : "Administrator",
-        joined: new Date().toLocaleString("default", {
-          month: "short",
-          year: "numeric",
-        }),
-        initials,
-      },
-    ]);
+    // ...existing code...
     setShowForm(false);
+  }
+
+  // Edit user handler (calls backend)
+  async function handleEditUser(index) {
+    const user = users[index];
+    try {
+      const res = await request(`/users/${user._id || user.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          name: editUser.name,
+          email: editUser.email,
+          role:
+            editUser.role === "Student"
+              ? "student"
+              : editUser.role === "Club President"
+              ? "president"
+              : "admin",
+        }),
+      });
+      // Update local state with backend response
+      const updated = [...users];
+      updated[index] = {
+        ...updated[index],
+        ...editUser,
+        role: editUser.role,
+      };
+      setUsers(updated);
+      setEditIndex(null);
+    } catch (err) {
+      // Optionally show error
+      setEditIndex(null);
+    }
+  }
+
+  // Remove user handler (calls backend)
+  async function handleRemoveUser(index) {
+    const user = users[index];
+    try {
+      await request(`/users/${user._id || user.id}`, {
+        method: "DELETE",
+      });
+      setUsers(users.filter((_, i) => i !== index));
+    } catch (err) {
+      // Optionally show error
+    }
   }
 
   const filteredUsers = users
@@ -220,20 +278,7 @@ export default function UserManagementPage() {
                     <>
                       <button
                         className="text-green-600"
-                        onClick={() => {
-                          const updated = [...users];
-                          updated[originalIndex] = {
-                            ...editUser,
-                            initials: editUser.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()
-                              .slice(0, 2),
-                          };
-                          setUsers(updated);
-                          setEditIndex(null);
-                        }}
+                        onClick={() => handleEditUser(originalIndex)}
                       >
                         Save
                       </button>
@@ -259,9 +304,7 @@ export default function UserManagementPage() {
                         className="text-red-500"
                         onClick={() => {
                           if (window.confirm(`Remove user ${user.name}?`)) {
-                            setUsers(
-                              users.filter((_, i) => i !== originalIndex)
-                            );
+                            handleRemoveUser(originalIndex);
                           }
                         }}
                       >
@@ -372,23 +415,10 @@ export default function UserManagementPage() {
                       <>
                         <button
                           className="text-green-600 hover:underline mr-2"
-                          onClick={() => {
-                            const updated = [...users];
-                            updated[originalIndex] = {
-                              ...editUser,
-                              initials: editUser.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                    .toUpperCase()
-                                    .slice(0, 2),
-                                };
-                                setUsers(updated);
-                                setEditIndex(null);
-                              }}
-                            >
-                              Save
-                            </button>
+                          onClick={() => handleEditUser(originalIndex)}
+                        >
+                          Save
+                        </button>
                             <button
                               className="text-gray-500 hover:underline"
                               onClick={() => setEditIndex(null)}
@@ -407,21 +437,17 @@ export default function UserManagementPage() {
                           >
                             Edit
                           </button>
-                            <span className="mx-2 text-slate-300">|</span>
-                            <button
-                              className="text-red-500 hover:underline"
-                              onClick={() => {
-                                if (
-                                  window.confirm(`Remove user ${user.name}?`)
-                                ) {
-                                  setUsers(
-                                    users.filter((_, i) => i !== originalIndex)
-                                  );
-                                }
-                              }}
-                            >
-                              Remove
-                            </button>
+                          <span className="mx-2 text-slate-300">|</span>
+                          <button
+                            className="text-red-500 hover:underline"
+                            onClick={() => {
+                              if (window.confirm(`Remove user ${user.name}?`)) {
+                                handleRemoveUser(originalIndex);
+                              }
+                            }}
+                          >
+                            Remove
+                          </button>
                           </>
                         )}
                       </td>
