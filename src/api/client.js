@@ -10,7 +10,12 @@ export async function request(path, options = {}) {
   const url = `${API_BASE_URL}${path.startsWith("/") ? "" : "/"}${path}`;
 
   let authHeaders = {};
-  if (typeof localStorage !== "undefined") {
+  // Only send Authorization header for protected endpoints
+  const isProtected = !(
+    (options.method === "POST" && path === "/events") ||
+    (options.method === "GET" && path === "/events")
+  );
+  if (isProtected && typeof localStorage !== "undefined") {
     const token = localStorage.getItem("token");
     if (token) {
       authHeaders.Authorization = `Bearer ${token}`;

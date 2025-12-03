@@ -46,7 +46,8 @@ const goTo = (target) => {
 const getDestinationForUser = (user) => roleRoutes[user?.role] || "/clubs";
 
 function App() {
-  const path = normalizePath(window.location.pathname);
+  let path = normalizePath(window.location.pathname);
+  if (path === "/") path = "/login";
   const ActivePage = routes[path] ?? LoginPage;
   const authLayout = isAuthPath(path);
   const isRegister = path === "/register";

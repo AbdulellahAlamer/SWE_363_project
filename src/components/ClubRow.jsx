@@ -9,6 +9,7 @@ export default function ClubRow({
   onSaveEdit,
   onCancelEdit,
   isSaving = false,
+  presidents = [],
 }) {
   return (
     <tr className="border-b border-gray-200">
@@ -33,11 +34,18 @@ export default function ClubRow({
       </td>
       <td className="py-4 w-1/4">
         {editingId === club.id ? (
-          <input
+          <select
             value={editForm.president}
             onChange={(e) => setEditForm((s) => ({ ...s, president: e.target.value }))}
-            className="px-3 py-2 border rounded-lg w-full"
-          />
+            className="px-3 py-2 border rounded-lg w-full bg-white"
+          >
+            <option value="">Select president</option>
+            {presidents.filter(user => user.status === "active").map((user) => (
+              <option key={user._id || user.id} value={user._id || user.id}>
+                {user.name} ({user.email})
+              </option>
+            ))}
+          </select>
         ) : (
           club.president
         )}

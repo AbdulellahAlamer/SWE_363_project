@@ -63,7 +63,17 @@ export async function fetchEvents({ clubId, userId } = {}) {
 
   const query = params.toString();
   const res = await request(query ? `/events?${query}` : "/events");
-  const events = extractEventsArray(res);
+  // Patch: handle backend response with { status, count, data }
+  let events = [];
+  if (Array.isArray(res)) {
+    events = res;
+  } else if (Array.isArray(res?.data)) {
+    events = res.data;
+  } else if (Array.isArray(res?.events)) {
+    events = res.events;
+  } else {
+    events = [];
+  }
   return events.map(normalizeEvent);
 }
 

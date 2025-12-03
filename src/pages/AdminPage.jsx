@@ -17,6 +17,7 @@ import {
 import { fetchEvents } from "../api/events";
 
 export default function AdminPage() {
+    const [presidents, setPresidents] = useState([]);
   const [clubs, setClubs] = useState([]);
   const [adminStatistics, setAdminStatistics] = useState(initialAdminStatistics);
   const [loading, setLoading] = useState(true);
@@ -81,6 +82,18 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadClubs();
+    // Fetch users with role 'president'
+    async function loadPresidents() {
+      try {
+        const res = await fetch("/api/v1/users?role=president");
+        const data = await res.json();
+        const users = Array.isArray(data.data) ? data.data : (Array.isArray(data.data?.users) ? data.data.users : []);
+        setPresidents(users);
+      } catch (err) {
+        setPresidents([]);
+      }
+    }
+    loadPresidents();
   }, []);
 
   const resetForm = () => {
@@ -203,25 +216,7 @@ export default function AdminPage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
-                <button className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
-                  All
-                </button>
-                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
-                  Awaiting Approval
-                </button>
-                <button className="px-4 py-2 hover:bg-blue-50 rounded-lg w-full sm:w-auto">
-                  Inactive
-                </button>
-              </div>
             </div>
-            <button
-              className="text-blue-600 hover:text-blue-700 w-full md:w-auto"
-              onClick={loadClubs}
-              disabled={isRefreshing}
-            >
-              {isRefreshing ? "Refreshing..." : "Refresh"}
-            </button>
           </div>
 
           <div className="overflow-x-auto">
@@ -272,6 +267,7 @@ export default function AdminPage() {
                       onSaveEdit={onSaveEdit}
                       onCancelEdit={onCancelEdit}
                       isSaving={isSavingEdit}
+                      presidents={presidents}
                     />
                   ))
                 )}
@@ -335,14 +331,19 @@ export default function AdminPage() {
                 onChange={(e) => setContactEmail(e.target.value)}
               />
             </FormField>
-            <FormField label="Assign President (User ObjectId)">
-              <input
-                type="text"
-                placeholder="MongoDB ObjectId for user"
-                className="px-4 py-2 border rounded-lg w-full"
+            <FormField label="Assign President (User)">
+              <select
+                className="px-4 py-2 border rounded-lg w-full bg-white"
                 value={assignPresident}
                 onChange={(e) => setAssignPresident(e.target.value)}
-              />
+              >
+                <option value="">Select president</option>
+                {presidents.filter(user => user.status === "active").map((user) => (
+                  <option key={user._id || user.id} value={user._id || user.id}>
+                    {user.name} ({user.email})
+                  </option>
+                ))}
+              </select>
             </FormField>
           </div>
           <FormField label="Logo Upload" className="mb-6">
@@ -360,11 +361,11 @@ export default function AdminPage() {
                 className:
                   "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg",
               },
-              {
-                label: "Save Draft",
-                className:
-                  "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
-              },
+              // {
+              //   label: "Save Draft",
+              //   className:
+              //     "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
+              // },
               {
                 label: isPublishing ? "Publishing..." : "Publish Club",
                 onClick: publishClub,
@@ -376,173 +377,6 @@ export default function AdminPage() {
           />
         </SectionCard>
 
-        <div className="mx-2 md:mx-8 mb-4 mt-8">
-          <h2 className="text-xl font-semibold">Create President Account</h2>
-          <span className="text-blue-600 text-sm ml-4">
-            Provision secure leadership access
-          </span>
-        </div>
-
-        <SectionCard className="mx-2 md:mx-8 mb-8">
-          <div className="bg-blue-50 p-4 rounded-lg mb-6 text-sm text-gray-600">
-            Invite a new club leader by creating their account, assigning them
-            to a club, and triggering an onboarding email with temporary
-            credentials.
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <FormField label="Full Name">
-              <input
-                type="text"
-                placeholder="e.g., Latifah Al-Dossary"
-                className="px-4 py-2 border rounded-lg w-full"
-                value={presFullName}
-                onChange={(e) => setPresFullName(e.target.value)}
-              />
-            </FormField>
-            <FormField label="KFUPM ID">
-              <input
-                type="text"
-                placeholder="Student/Staff ID"
-                className="px-4 py-2 border rounded-lg w-full"
-                value={presId}
-                onChange={(e) => setPresId(e.target.value)}
-              />
-            </FormField>
-            <FormField label="Email">
-              <input
-                type="email"
-                placeholder="email@gamil.com"
-                className="px-4 py-2 border rounded-lg w-full"
-                value={presEmail}
-                onChange={(e) => setPresEmail(e.target.value)}
-              />
-            </FormField>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <FormField label="Phone Number">
-              <input
-                type="text"
-                placeholder="05X-XXX-XXXX"
-                className="px-4 py-2 border rounded-lg w-full"
-                value={presPhone}
-                onChange={(e) => setPresPhone(e.target.value)}
-              />
-            </FormField>
-            <FormField label="Role Start Date">
-              <input
-                type="date"
-                className="px-4 py-2 border rounded-lg w-full"
-                value={presStartDate}
-                onChange={(e) => setPresStartDate(e.target.value)}
-              />
-            </FormField>
-            <FormField label="Assign Club">
-              <select
-                className="px-4 py-2 border rounded-lg w-full bg-white"
-                value={presClub}
-                onChange={(e) => setPresClub(e.target.value)}
-              >
-                <option value="">Select existing club</option>
-                {clubs.map((club) => (
-                  <option key={club.id} value={club.name}>
-                    {club.name}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <FormField label="Temporary Password">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Generate secure code"
-                  className="px-4 py-2 border rounded-lg w-full"
-                  value={presPassword}
-                  readOnly
-                />
-                <button
-                  type="button"
-                  className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  onClick={() => {
-                    const chars =
-                      "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
-                    let pwd = "";
-                    for (
-                      let i = 0;
-                      i < 10 + Math.floor(Math.random() * 3);
-                      i++
-                    ) {
-                      pwd += chars.charAt(
-                        Math.floor(Math.random() * chars.length)
-                      );
-                    }
-                    setPresPassword(pwd);
-                  }}
-                >
-                  Generate
-                </button>
-              </div>
-            </FormField>
-          </div>
-          <div className="text-sm text-gray-500 mb-6">
-            Share only through official KFUPM channels. The leader will be
-            prompted to reset on first login.
-          </div>
-          <ButtonGroup
-            buttons={[
-              {
-                label: "Clear",
-                onClick: () => {
-                  setPresFullName("");
-                  setPresId("");
-                  setPresEmail("");
-                  setPresPhone("");
-                  setPresStartDate("");
-                  setPresClub("");
-                  setPresPassword("");
-                },
-                className:
-                  "px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg",
-              },
-              {
-                label: "Save Draft",
-                className:
-                  "px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg",
-              },
-              {
-                label: "Send Invite",
-                className:
-                  "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700",
-                onClick: () => {
-                  if (!presEmail.endsWith("@kfupm.edu.sa")) {
-                    window.alert(
-                      "University email must end with @kfupm.edu.sa.\nExample: username@kfupm.edu.sa"
-                    );
-                    return;
-                  }
-                  if (!/^05\d{8}$/.test(presPhone)) {
-                    window.alert(
-                      "Phone number must be 10 digits, start with 05, and match the format: 05X-XXX-XXXX"
-                    );
-                    return;
-                  }
-                  if (!presClub) {
-                    window.alert("Please select a club from the list.");
-                    return;
-                  }
-                  window.alert(
-                    `Invitation sent!\n\nAccount for ${
-                      presFullName || "(No Name)"
-                    } has been created.\nA temporary password will be sent to: ${presEmail}\nAssigned club: ${presClub}\nPhone: ${presPhone}\nStart Date: ${
-                      presStartDate || "(Not set)"
-                    }`
-                  );
-                },
-              },
-            ]}
-          />
-        </SectionCard>
       </div>
     </div>
   );

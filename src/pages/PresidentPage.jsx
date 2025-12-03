@@ -64,63 +64,38 @@ export default function PresidentPage() {
   const [posts, setPosts] = useState(initialPosts);
   const [editingPost, setEditingPost] = useState(null);
   const qrRef = useRef(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [clubs, setClubs] = useState([]);
+  const [clubsLoading, setClubsLoading] = useState(true);
+  const [clubsError, setClubsError] = useState(null);
 
   useEffect(() => {
     const loadEvents = async () => {
       try {
-        setEventsError(null);
         setEventsLoading(true);
-        const clubIdFilter =
-          club?.id && isObjectId(club.id) ? club.id : undefined;
-        const data = await fetchEvents({ clubId: clubIdFilter });
+        const data = await fetchEvents();
         setEvents(data);
-        setSelectedEvent((data[0] && data[0].id) || "");
+        setEventsLoading(false);
       } catch (err) {
-        setEventsError(err.message || "Failed to load events");
-        setEvents([]);
-        setSelectedEvent("");
-      } finally {
+        setEventsError("Failed to load events.");
         setEventsLoading(false);
       }
     };
-
-    loadEvents();
-  }, []);
-
-  const handlePostEdit = (postId) => {
-    const post = posts.find((p) => p.id === postId);
-    setEditingPost(post || null);
-  };
-
-  const closePostEditor = () => setEditingPost(null);
-
-  // Download QR as PNG
-  const handleDownloadQR = () => {
-    const svg = qrRef.current?.querySelector("svg");
-    if (!svg) return;
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const img = new window.Image();
-    const size = 140;
-    canvas.width = size;
-    canvas.height = size;
-    img.onload = function () {
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, size, size);
-      ctx.drawImage(img, 0, 0, size, size);
-      const pngUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = pngUrl;
-      link.download = "qr-code.png";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const loadClubs = async () => {
+      try {
+        setClubsLoading(true);
+        const { fetchClubs } = await import("../api/clubs.js");
+        const clubsData = await fetchClubs();
+        setClubs(clubsData);
+        setClubsLoading(false);
+      } catch (err) {
+        setClubsError("Failed to load clubs.");
+        setClubsLoading(false);
+      }
     };
-    img.src =
-      "data:image/svg+xml;base64," +
-      window.btoa(unescape(encodeURIComponent(svgString)));
-  };
+    loadEvents();
+    loadClubs();
+  }, []);
 
   // Copy QR value as link (or text)
   const handleCopyLink = () => {
@@ -129,11 +104,45 @@ export default function PresidentPage() {
     }
   };
 
+  // Download QR code as image
+  const handleDownloadQR = () => {
+    if (qrRef.current) {
+      const svg = qrRef.current.querySelector('svg');
+      if (!svg) return;
+      const serializer = new XMLSerializer();
+      const svgString = serializer.serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const img = new window.Image();
+      img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const pngFile = canvas.toDataURL('image/png');
+        const downloadLink = document.createElement('a');
+        downloadLink.href = pngFile;
+        downloadLink.download = 'qr-code.png';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      };
+      img.src = 'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svgString)));
+    }
+  };
+
+  // Post edit handler
+  const handlePostEdit = (post) => {
+    setEditingPost(post);
+  };
+
+  // Close post editor
+  const closePostEditor = () => {
+    setEditingPost(null);
+  };
+
   return (
     <div className="min-h-screen bg-[#f5f7fe]">
       <NavigationBar active="/president" type="president" />
-
-      {/* changed: remove fixed inline padding, use responsive margin so mobile header/drawer works */}
       <main className="px-4 md:px-8 py-6 max-w-[1600px] mx-auto ml-0 md:ml-64 pt-16 md:pt-6">
         {/* Club Header */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-[#e9f0ff] rounded-2xl shadow p-6 lg:p-8 mb-8 gap-6">
@@ -151,7 +160,7 @@ export default function PresidentPage() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full lg:w-auto">
-            <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base">
+            <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base" onClick={() => setShowEventForm(true)}>
               Create Event
             </Button>
             <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base">
@@ -160,34 +169,36 @@ export default function PresidentPage() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex flex-col lg:flex-row gap-8 mb-10">
-          {stats.map((stat, i) => (
-            <div
-              key={i}
-              className="flex-1 bg-[#e9f0ff] rounded-2xl shadow p-6 flex flex-col items-center"
-            >
-              <div className="text-xs text-slate-500 mb-2">{stat.label}</div>
-              <div className="text-3xl font-bold text-slate-900">
-                {stat.value}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Event Creation Popup */}
+        {showEventForm && clubs.length > 0 && (
+          <PopupForm
+            method="POST"
+            submitLabel="Create Event"
+            fields={[
+              { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
+              { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
+              { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
+              { name: "type", label: "Type", dataType: "string", options: [
+                { value: "Workshop", label: "Workshop" },
+                { value: "Hackathon", label: "Hackathon" },
+                { value: "Seminar", label: "Seminar" },
+                { value: "Competition", label: "Competition" },
+                { value: "Meetup", label: "Meetup" },
+                { value: "Other", label: "Other" },
+              ] },
+              { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+              { name: "club", label: "Club", dataType: "hidden" },
+            ]}
+            initialValues={{ club: clubs[0]._id }}
+            onClose={() => setShowEventForm(false)}
+            endpoint="/events"
+          />
+        )}
 
         {/* Attendance Check-In */}
         <div className="mb-12">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Attendance Check-In
-            </h2>
-            <a
-              href="#"
-              className="text-blue-600 text-sm font-medium hover:underline"
-            >
-              Generate a QR for live scans
-            </a>
-          </div>
+          <h2 className="text-2xl font-bold text-slate-900">Attendance Check-In</h2>
+          <a href="#" className="text-blue-600 text-sm font-medium hover:underline">Generate a QR for live scans</a>
           <SectionCard className="flex gap-8 items-center">
             <div className="flex-1">
               <div className="mb-4">
@@ -198,19 +209,11 @@ export default function PresidentPage() {
                   onChange={(e) => setSelectedEvent(e.target.value)}
                 >
                   {events.length === 0 ? (
-                    <option value="" disabled>
-                      {eventsLoading ? "Loading events..." : "No events found"}
-                    </option>
+                    <option value="" disabled>{eventsLoading ? "Loading events..." : "No events found"}</option>
                   ) : (
                     events.map((ev) => (
                       <option key={ev.id} value={ev.id}>
-                        {ev.title} @{" "}
-                        {ev.date
-                          ? new Date(ev.date).toLocaleString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })
-                          : "TBA"}
+                        {ev.title} @ {ev.date ? new Date(ev.date).toLocaleString("en-US", { month: "short", day: "numeric" }) : "TBA"}
                       </option>
                     ))
                   )}
@@ -221,11 +224,7 @@ export default function PresidentPage() {
                 onClick={() => {
                   const event = events.find((ev) => ev.id === selectedEvent);
                   const value = event
-                    ? `Event: ${event.title}\nDate: ${
-                        event.date
-                          ? new Date(event.date).toLocaleString()
-                          : "Date TBA"
-                      }\nClub: ${event.host}`
+                    ? `Event: ${event.title}\nDate: ${event.date ? new Date(event.date).toLocaleString() : "Date TBA"}\nClub: ${event.host}`
                     : "";
                   setQrValue(value);
                   setQrGenerated(true);
@@ -235,41 +234,17 @@ export default function PresidentPage() {
               </Button>
             </div>
             <div className="flex-1 flex flex-col items-center">
-              <div
-                className="w-40 h-40 flex items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f5f7fe] mb-2"
-                ref={qrRef}
-              >
+              <div className="w-40 h-40 flex items-center justify-center rounded-2xl border-2 border-dashed border-blue-200 bg-[#f5f7fe] mb-2" ref={qrRef}>
                 {qrGenerated && qrValue ? (
-                  <QRCode
-                    value={qrValue}
-                    size={140}
-                    style={{ width: 140, height: 140 }}
-                  />
+                  <QRCode value={qrValue} size={140} style={{ width: 140, height: 140 }} />
                 ) : (
                   <span className="text-2xl text-blue-400 font-bold">QR</span>
                 )}
               </div>
-              <div className="text-xs text-slate-500 text-center mb-2">
-                Display this code at the venue. Students can scan using the
-                KFUPM Clubs app to check in.
-              </div>
+              <div className="text-xs text-slate-500 text-center mb-2">Display this code at the venue. Students can scan using the KFUPM Clubs app to check in.</div>
               <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  className="text-blue-600 border-blue-600"
-                  disabled={!qrGenerated}
-                  onClick={handleDownloadQR}
-                >
-                  Download QR
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="text-blue-600"
-                  disabled={!qrGenerated}
-                  onClick={handleCopyLink}
-                >
-                  Copy Link
-                </Button>
+                <Button variant="outline" className="text-blue-600 border-blue-600" disabled={!qrGenerated} onClick={handleDownloadQR}>Download QR</Button>
+                <Button variant="ghost" className="text-blue-600" disabled={!qrGenerated} onClick={handleCopyLink}>Copy Link</Button>
               </div>
             </div>
           </SectionCard>
@@ -277,12 +252,8 @@ export default function PresidentPage() {
 
         {/* Manage Events */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            Manage Events
-          </h2>
-          {eventsError && (
-            <p className="text-sm text-red-600 mb-3">{eventsError}</p>
-          )}
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Manage Events</h2>
+          {eventsError && <p className="text-sm text-red-600 mb-3">{eventsError}</p>}
           {eventsLoading ? (
             <p className="text-sm text-slate-500">Loading events...</p>
           ) : events.length === 0 ? (
@@ -290,133 +261,65 @@ export default function PresidentPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {events.slice(0, 3).map((ev) => (
-                <div
-                  key={ev.id}
-                  className="flex flex-col bg-white rounded-2xl shadow p-6"
-                >
+                <div key={ev.id} className="flex flex-col bg-white rounded-2xl shadow p-6">
                   <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
                   {editingId === ev.id ? (
                     <>
                       <input
                         className="text-lg font-semibold text-slate-900 mb-1 border rounded p-1 mb-2"
                         value={editForm.title}
-                        onChange={(e) =>
-                          setEditForm((f) => ({ ...f, title: e.target.value }))
-                        }
+                        onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                       />
                       <textarea
                         className="text-slate-500 text-sm mb-2 border rounded p-1"
                         value={editForm.description}
-                        onChange={(e) =>
-                          setEditForm((f) => ({
-                            ...f,
-                            description: e.target.value,
-                          }))
-                        }
+                        onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
                       />
                     </>
                   ) : (
                     <>
-                      <div className="text-lg font-semibold text-slate-900 mb-1">
-                        {ev.title}
-                      </div>
-                      <div className="text-slate-500 text-sm mb-2">
-                        {ev.description}
-                      </div>
+                      <div className="text-lg font-semibold text-slate-900 mb-1">{ev.title}</div>
+                      <div className="text-slate-500 text-sm mb-2">{ev.description}</div>
                     </>
                   )}
-                  <div className="text-xs text-slate-400 mb-2">
-                    {ev.date
-                      ? new Date(ev.date).toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "Date TBA"}{" "}
-                    - {ev.registered || 0} registered
-                  </div>
+                  <div className="text-xs text-slate-400 mb-2">{ev.date ? new Date(ev.date).toLocaleString("en-US", { month: "short", day: "numeric" }) : "Date TBA"} - {ev.registered || 0} registered</div>
                   <div className="flex gap-2 mb-2">
                     {editingId === ev.id ? (
                       <>
-                        <Button
-                          variant="secondary"
-                          className="w-1/2"
-                          onClick={() => {
-                            setEvents((prev) =>
-                              prev.map((e) =>
-                                e.id === ev.id ? { ...e, ...editForm } : e
-                              )
-                            );
-                            setEditingId(null);
-                          }}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="w-1/2 text-gray-600 border-gray-200"
-                          onClick={() => setEditingId(null)}
-                        >
-                          Cancel
-                        </Button>
+                        <Button variant="secondary" className="w-1/2" onClick={() => {
+                          setEvents((prev) => prev.map((e) => e.id === ev.id ? { ...e, ...editForm } : e));
+                          setEditingId(null);
+                        }}>Save</Button>
+                        <Button variant="outline" className="w-1/2 text-gray-600 border-gray-200" onClick={() => setEditingId(null)}>Cancel</Button>
                       </>
                     ) : (
                       <>
-                        <Button
-                          variant="secondary"
-                          className="w-1/2"
-                          onClick={() => {
-                            setEditingId(ev.id);
-                            setEditForm({
-                              title: ev.title,
-                              description: ev.description,
-                            });
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="w-1/2 text-red-600 border-red-200"
-                          onClick={() =>
-                            setEvents((prev) =>
-                              prev.filter((e) => e.id !== ev.id)
-                            )
-                          }
-                        >
-                          Delete
-                        </Button>
+                        <Button variant="secondary" className="w-1/2" onClick={() => {
+                          setEditingId(ev.id);
+                          setEditForm({ title: ev.title, description: ev.description });
+                        }}>Edit</Button>
+                        <Button variant="outline" className="w-1/2 text-red-600 border-red-200" onClick={() => setEvents((prev) => prev.filter((e) => e.id !== ev.id))}>Delete</Button>
                       </>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    className="w-full border border-blue-200 text-blue-600"
-                    onClick={() => alert("joined students will be notified")}
-                  >
-                    Notify By email
-                  </Button>
+                  <Button variant="ghost" className="w-full border border-blue-200 text-blue-600" onClick={() => alert("joined students will be notified")}>Notify By email</Button>
                 </div>
               ))}
             </div>
           )}
         </div>
+
         {/* Manage Posts */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">
-            Manage Posts
-          </h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Manage Posts</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                type="president"
-                onEdit={handlePostEdit}
-              />
+              <PostCard key={post.id} post={post} type="president" onEdit={handlePostEdit} />
             ))}
           </div>
         </div>
       </main>
+      {/* Post Edit Popup */}
       {editingPost && (
         <PopupForm
           method="PUT"
@@ -433,11 +336,8 @@ export default function PresidentPage() {
           }}
           onClose={closePostEditor}
           onSubmit={(values) => {
-            setPosts((prev) =>
-              prev.map((post) =>
-                post.id === editingPost.id ? { ...post, ...values } : post
-              )
-            );
+            setPosts((prev) => prev.map((post) => post.id === editingPost.id ? { ...post, ...values } : post));
+            closePostEditor();
           }}
         />
       )}

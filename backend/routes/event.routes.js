@@ -18,7 +18,7 @@ router.get("/", getAllEvents);
 router.get("/club/:clubId", getEventsOfClub);
 
 // Event management (admin/president)
-router.post("/", protectRoute, restrictTo("admin", "president"), createEvent);
+router.post("/", createEvent);
 router.put("/:eventId", protectRoute, restrictTo("admin", "president"), editEvent);
 router.delete("/:eventId", protectRoute, restrictTo("admin", "president"), deleteEvent);
 

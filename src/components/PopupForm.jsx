@@ -35,6 +35,8 @@ const normalizeField = (field) => {
         .replace(/[_-]/g, " ")
         .replace(/\b\w/g, (c) => c.toUpperCase()),
       dataType: "string",
+      required: true,
+      optional: false,
     };
   }
   return {
@@ -44,8 +46,9 @@ const normalizeField = (field) => {
       field.name.replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
     dataType: field.dataType || field.type || "string",
     placeholder: field.placeholder,
-    required: field.required ?? true,
+    required: field.optional ? false : (field.required ?? true),
     options: field.options,
+    optional: field.optional ?? false,
   };
 };
 
@@ -164,6 +167,7 @@ function PopupForm({
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           {normalizedFields.map((field) => {
+            if (field.dataType === "hidden") return null;
             const inputType =
               INPUT_TYPE_MAP[field.dataType?.toLowerCase()] || "text";
             const value = formValues[field.name];
@@ -248,5 +252,4 @@ function PopupForm({
     </div>
   );
 }
-
 export default PopupForm;
