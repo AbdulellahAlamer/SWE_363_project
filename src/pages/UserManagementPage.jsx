@@ -107,7 +107,7 @@ export default function UserManagementPage() {
         password: formData.password,
         role: formData.role,
       };
-      const res = await request("/api/v1/users", {
+      const res = await request("/users", {
         method: "POST",
         body: JSON.stringify(payload),
       });
