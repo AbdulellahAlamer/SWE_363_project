@@ -4,7 +4,7 @@ import {
   fetchMyClubs,
   subscribeToClub,
   unsubscribeFromClub,
-} from "../api/clubs";
+} from "../api/clubs.js";
 import ClubCard from "../components/ClubCard";
 import Button from "../components/Button";
 import NavigationBar from "../components/NavigationBar";
@@ -56,7 +56,7 @@ export default function ClubsPage() {
       const mine = await fetchMyClubs();
       setJoinedIds(new Set(mine.map((c) => c.id)));
     } catch (err) {
-      // silently ignore, likely unauthenticated
+      console.log(err);
     }
   };
 
@@ -145,11 +145,17 @@ export default function ClubsPage() {
 
         <div className="max-w-6xl mx-auto px-8 pb-12">
           {loading ? (
-            <div className="text-center py-12 text-gray-600">Loading clubs…</div>
+            <div className="text-center py-12 text-gray-600">
+              Loading clubs…
+            </div>
           ) : error ? (
             <div className="text-center py-12">
               <p className="text-gray-700 mb-3">{error}</p>
-              <Button variant="primary" onClick={loadClubs} disabled={isRefreshing}>
+              <Button
+                variant="primary"
+                onClick={loadClubs}
+                disabled={isRefreshing}
+              >
                 {isRefreshing ? "Refreshing..." : "Retry"}
               </Button>
             </div>
