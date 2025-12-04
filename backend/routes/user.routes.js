@@ -16,8 +16,8 @@ const router = express.Router();
 // router.use(protectRoute);
 
 // My profile
-router.get("/me", getMe);
-router.patch("/me", updateMe);
+router.get("/me", protectRoute, getMe);
+router.patch("/me", protectRoute, updateMe);
 
 // Search users (admin only)
 router.get("/search", searchUsers);
