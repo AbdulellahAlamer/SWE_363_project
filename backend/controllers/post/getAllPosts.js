@@ -16,6 +16,7 @@ const getAllPosts = async (req, res) => {
 
     const posts = await Post.find(filter)
       .populate("club", "name category status")
+      .populate("likes", "_id name email")
       .sort({ createdAt: -1 });
 
     res.status(200).json({

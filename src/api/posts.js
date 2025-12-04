@@ -101,3 +101,9 @@ export async function deletePost(id) {
   await request(`/posts/${id}`, { method: "DELETE" });
   return true;
 }
+
+export async function likePost(id) {
+  if (!id) throw new Error("Post id is required");
+  const res = await request(`/posts/${id}/like`, { method: "POST" });
+  return res;
+}

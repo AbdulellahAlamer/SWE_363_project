@@ -229,9 +229,9 @@ export default function ProfilePage() {
 
       <div className="w-full flex-1 pt-16 md:pt-0 md:ml-64 p-4 sm:p-6 lg:p-10">
         {/* Profile Header */}
-        <div className="mb-6 sm:mb-8 rounded-2xl bg-gradient-to-r from-slate-200 to-slate-300 p-4 sm:p-6 lg:p-8 shadow-lg relative">
+        <div className="mb-6 sm:mb-8 rounded-2xl bg-linear-to-r from-slate-200 to-slate-300 p-4 sm:p-6 lg:p-8 shadow-lg relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white shadow-md overflow-hidden flex-shrink-0">
+            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white shadow-md overflow-hidden shrink-0">
               {safeProfile.profileImage ? (
                 <img
                   src={safeProfile.profileImage}
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
+                <div className="w-full h-full bg-linear-to-br from-blue-100 to-blue-200"></div>
               )}
             </div>
             <div className="flex-1 text-center sm:text-left">
@@ -285,7 +285,7 @@ export default function ProfilePage() {
               key={event.id || event._id || event.title}
               className="rounded-xl bg-white p-4 sm:p-5 shadow-md hover:shadow-lg transition-shadow"
             >
-              <div className="h-20 sm:h-24 mb-3 sm:mb-4 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200"></div>
+              <div className="h-20 sm:h-24 mb-3 sm:mb-4 rounded-lg bg-linear-to-br from-blue-100 to-blue-200"></div>
               <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-1">
                 {event.title}
               </h3>
@@ -431,7 +431,7 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200"></div>
+                  <div className="w-full h-full bg-linear-to-br from-blue-100 to-blue-200"></div>
                 )}
               </div>
               <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">

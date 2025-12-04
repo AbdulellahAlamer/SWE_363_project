@@ -214,6 +214,25 @@ function PopupForm({
               );
             }
 
+            if (field.dataType?.toLowerCase() === "textarea") {
+              return (
+                <label
+                  key={field.name}
+                  className="flex flex-col gap-2 text-sm font-medium text-slate-700"
+                >
+                  <span>{field.label}</span>
+                  <textarea
+                    value={value ?? ""}
+                    onChange={(event) => handleChange(field, event)}
+                    placeholder={field.placeholder}
+                    required={field.required}
+                    rows={4}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 resize-vertical"
+                  />
+                </label>
+              );
+            }
+
             return (
               <label
                 key={field.name}

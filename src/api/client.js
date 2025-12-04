@@ -12,23 +12,34 @@ export async function request(path, options = {}) {
   let authHeaders = {};
   // Only send Authorization header for protected endpoints
   const isProtected = !(
-    (options.method === "POST" && path === "/events") ||
-    (options.method === "GET" && path === "/events")
+    (options.method === "GET" && (path === "/events" || path.startsWith("/events/"))) ||
+    (options.method === "GET" && (path === "/posts" || path.startsWith("/posts/")))
   );
+  
+  console.log(`[DEBUG] API Request: ${options.method || 'GET'} ${url}`);
+  console.log(`[DEBUG] Is protected endpoint: ${isProtected}`);
+  
   if (isProtected && typeof localStorage !== "undefined") {
     const token = localStorage.getItem("token");
     if (token) {
       authHeaders.Authorization = `Bearer ${token}`;
+      console.log(`[DEBUG] Added auth header with token: ${token.substring(0, 20)}...`);
+    } else {
+      console.log(`[DEBUG] No token found in localStorage`);
     }
   }
 
+  const finalHeaders = {
+    ...defaultHeaders,
+    ...authHeaders,
+    ...(options.headers || {}),
+  };
+  
+  console.log(`[DEBUG] Final headers:`, finalHeaders);
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      ...defaultHeaders,
-      ...authHeaders,
-      ...(options.headers || {}),
-    },
+    headers: finalHeaders,
   });
 
   let data = null;

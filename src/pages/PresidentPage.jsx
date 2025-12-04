@@ -5,52 +5,8 @@ import Button from "../components/Button.jsx";
 import SectionCard from "../components/SectionCard.jsx";
 import PostCard from "../components/PostCard.jsx";
 import PopupForm from "../components/PopupForm.jsx";
-import { adminClubSeeds, ClubsInfo } from "../assets/data.js";
 import { fetchEvents } from "../api/events.js";
 import { isObjectId } from "../api/clubs.js";
-
-const club = adminClubSeeds[0];
-const stats = Object.entries(ClubsInfo[club.name] || {}).map(
-  ([label, value]) => ({
-    label,
-    value,
-  })
-);
-const initialPosts = [
-  {
-    id: 1,
-    clubInitials: "ISE",
-    clubName: "ISE Club",
-    timeAgo: "Posted yesterday",
-    title: "Lean Workshop Materials",
-    body: "Slides and templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
-    imageUrl: "",
-    tag: "RESOURCES",
-    likes: 42,
-  },
-  {
-    id: 2,
-    clubInitials: "ISE",
-    clubName: "ISE Club",
-    timeAgo: "Posted yesterday",
-    title: "Lean Workshop Materials",
-    body: "Slides an  d templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
-    imageUrl: "",
-    tag: "RESOURCES",
-    likes: 42,
-  },
-  {
-    id: 3,
-    clubInitials: "ISE",
-    clubName: "ISE Club",
-    timeAgo: "Posted yesterday",
-    title: "Lean Workshop Materials",
-    body: "Slides and templates from last week's lean manufacturing bootcamp are now available. Download and share with your project teams.",
-    imageUrl: "",
-    tag: "RESOURCES",
-    likes: 42,
-  },
-];
 
 export default function PresidentPage() {
   const [selectedEvent, setSelectedEvent] = useState("");
@@ -61,13 +17,18 @@ export default function PresidentPage() {
   const [eventsError, setEventsError] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "" });
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [showCreatePostForm, setShowCreatePostForm] = useState(false);
   const qrRef = useRef(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [clubs, setClubs] = useState([]);
   const [clubsLoading, setClubsLoading] = useState(true);
   const [clubsError, setClubsError] = useState(null);
+  const [viewingRegistrations, setViewingRegistrations] = useState(null);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -81,18 +42,86 @@ export default function PresidentPage() {
         setEventsLoading(false);
       }
     };
+    
     const loadClubs = async () => {
       try {
         setClubsLoading(true);
         const { fetchClubs } = await import("../api/clubs.js");
+        const { fetchCurrentUser } = await import("../api/users.js");
+        
+        // Get current user info
+        const currentUser = await fetchCurrentUser();
+        
+        // Get all clubs and filter for ones where current user is president
         const clubsData = await fetchClubs();
-        setClubs(clubsData);
+        
+        const myPresidentialClubs = clubsData.filter(club => {
+          // Check if the current user is the president of this club
+          return club.raw.president && 
+                 (club.raw.president._id === currentUser.id || 
+                  club.raw.president === currentUser.id ||
+                  (typeof club.raw.president === 'object' && club.raw.president._id === currentUser.raw._id));
+        });
+        
+        setClubs(myPresidentialClubs);
         setClubsLoading(false);
+        
+        // Load posts after clubs are loaded
+        if (myPresidentialClubs.length > 0) {
+          loadPosts(myPresidentialClubs);
+        } else {
+          setPostsLoading(false);
+        }
       } catch (err) {
+        console.error("Failed to load clubs:", err);
         setClubsError("Failed to load clubs.");
         setClubsLoading(false);
+        setPostsLoading(false);
       }
     };
+    
+    const loadPosts = async (clubsArray) => {
+      try {
+        console.log("[DEBUG] Loading posts - clubsArray:", clubsArray);
+        setPostsLoading(true);
+        const { fetchPosts } = await import("../api/posts.js");
+        const postsData = await fetchPosts();
+        console.log("[DEBUG] Raw posts data from API:", postsData);
+        
+        // Log each post's ID structure
+        postsData.forEach((post, index) => {
+          console.log(`[DEBUG] Post ${index}:`, {
+            id: post.id,
+            _id: post._id,
+            rawId: post.raw?._id,
+            title: post.title,
+            fullPost: post
+          });
+        });
+        
+        // Filter posts for the president's club if available
+        if (clubsArray && clubsArray.length > 0) {
+          console.log("[DEBUG] Filtering posts for club ID:", clubsArray[0].id);
+          const clubPosts = postsData.filter(post => {
+            const match = post.club === clubsArray[0].id || post.clubId === clubsArray[0].id;
+            console.log(`[DEBUG] Post ${post.title} - club: ${post.club}, clubId: ${post.clubId}, matches: ${match}`);
+            return match;
+          });
+          console.log("[DEBUG] Filtered club posts:", clubPosts);
+          setPosts(clubPosts);
+        } else {
+          console.log("[DEBUG] No club filtering, setting all posts");
+          setPosts(postsData);
+        }
+        
+        setPostsLoading(false);
+      } catch (err) {
+        console.error("[DEBUG] Failed to load posts:", err);
+        setPostsError("Failed to load posts.");
+        setPostsLoading(false);
+      }
+    };
+    
     loadEvents();
     loadClubs();
   }, []);
@@ -135,10 +164,149 @@ export default function PresidentPage() {
     setEditingPost(post);
   };
 
+  // Post delete handler
+  const handlePostDelete = async (postId) => {
+    console.log("[DEBUG] === POST DELETE START ===");
+    console.log("[DEBUG] Received postId:", postId, typeof postId);
+    console.log("[DEBUG] Current posts state:", posts);
+    
+    const postToDelete = posts.find(p => {
+      const currentId = p.raw?._id || p.id || p._id;
+      console.log(`[DEBUG] Checking post ${p.title}: currentId=${currentId}, matches=${currentId === postId}`);
+      return currentId === postId;
+    });
+    
+    console.log("[DEBUG] Found post to delete:", postToDelete);
+    
+    if (!postToDelete) {
+      console.log("[DEBUG] ERROR: Post not found in current state!");
+      alert("Post not found in current state. Please refresh the page.");
+      return;
+    }
+    
+    if (confirm("Are you sure you want to delete this post?")) {
+      try {
+        console.log("[DEBUG] User confirmed deletion");
+        console.log("[DEBUG] Attempting to delete post with ID:", postId);
+        const { request } = await import("../api/client.js");
+        
+        // First, let's try to fetch the post to see if it exists
+        console.log("[DEBUG] Checking if post exists in database...");
+        try {
+          const checkResponse = await request(`/posts/${postId}`);
+          console.log("[DEBUG] Post exists in database:", checkResponse);
+        } catch (checkError) {
+          console.log("[DEBUG] Post doesn't exist in database:", checkError);
+          console.log("[DEBUG] Removing from frontend state anyway");
+          setPosts(prevPosts => {
+            const filtered = prevPosts.filter(post => {
+              const currentPostId = post.raw?._id || post.id || post._id;
+              return currentPostId !== postId;
+            });
+            console.log("[DEBUG] New posts state after removal:", filtered);
+            return filtered;
+          });
+          alert("Post was already deleted or doesn't exist in database.");
+          return;
+        }
+        
+        console.log("[DEBUG] Making DELETE request to /posts/" + postId);
+        const response = await request(`/posts/${postId}`, { method: "DELETE" });
+        console.log("[DEBUG] Delete response:", response);
+        
+        console.log("[DEBUG] Updating posts state - removing deleted post");
+        setPosts(prevPosts => {
+          const filtered = prevPosts.filter(post => {
+            const currentPostId = post.raw?._id || post.id || post._id;
+            const shouldKeep = currentPostId !== postId;
+            console.log(`[DEBUG] Post ${post.title}: currentId=${currentPostId}, shouldKeep=${shouldKeep}`);
+            return shouldKeep;
+          });
+          console.log("[DEBUG] New posts state after successful deletion:", filtered);
+          return filtered;
+        });
+        
+        console.log("[DEBUG] Post deleted successfully!");
+      } catch (error) {
+        console.error("[DEBUG] Failed to delete post - full error:", error);
+        console.error("[DEBUG] Error message:", error.message);
+        console.error("[DEBUG] Error stack:", error.stack);
+        alert(`Failed to delete post: ${error.message}. Please try again.`);
+      }
+    } else {
+      console.log("[DEBUG] User cancelled deletion");
+    }
+    console.log("[DEBUG] === POST DELETE END ===");
+  };
+
   // Close post editor
   const closePostEditor = () => {
     setEditingPost(null);
   };
+
+  // Event edit handler
+  const handleEventEdit = (event) => {
+    setEditingEvent(event);
+  };
+
+  // Event delete handler
+  const handleEventDelete = async (eventId) => {
+    if (confirm("Are you sure you want to delete this event?")) {
+      try {
+        const { request } = await import("../api/client.js");
+        await request(`/events/${eventId}`, { method: "DELETE" });
+        setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+      } catch (error) {
+        console.error("Failed to delete event:", error);
+        alert("Failed to delete event. Please try again.");
+      }
+    }
+  };
+
+  // Close event editor
+  const closeEventEditor = () => {
+    setEditingEvent(null);
+  };
+
+  // Handle email notification
+  const handleNotifyByEmail = async (event) => {
+    if (confirm(`Send email notification to all registered students for "${event.title}"?`)) {
+      try {
+        const { request } = await import("../api/client.js");
+        const response = await request(`/events/${event.id}/notify`, { 
+          method: "POST",
+          body: JSON.stringify({}) 
+        });
+        
+        // Show success message with details
+        const results = response.results || [];
+        const successCount = results.filter(r => r.status === 'sent').length;
+        const failCount = results.filter(r => r.status === 'failed').length;
+        
+        if (failCount > 0) {
+          // Check for specific error types
+          const limitErrors = results.filter(r => r.error?.includes('trial account') || r.error?.includes('limit'));
+          
+          if (limitErrors.length > 0) {
+            alert(`Email service trial limit reached. Found ${results.length} registered student(s) but emails cannot be sent due to MailerSend trial account limits. Upgrade the email service to send notifications.`);
+          } else {
+            alert(`Notifications sent: ${successCount} successful, ${failCount} failed. Check console for details.`);
+          }
+          console.log("Email notification results:", results);
+        } else {
+          alert(`Successfully sent email notifications to ${successCount} registered students!`);
+        }
+      } catch (error) {
+        console.error("Failed to send email notifications:", error);
+        alert("Failed to send email notifications. Please try again.");
+      }
+    }
+  };
+
+  // Determine president's club from fetched clubs
+  const presidentClub = clubs.length > 0 ? clubs[0] : null;
+  // Fallback stats if needed
+  const stats = presidentClub ? Object.entries(presidentClub.stats || {}).map(([label, value]) => ({ label, value })) : [];
 
   return (
     <div className="min-h-screen bg-[#f5f7fe]">
@@ -148,11 +316,11 @@ export default function PresidentPage() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between bg-[#e9f0ff] rounded-2xl shadow p-6 lg:p-8 mb-8 gap-6">
           <div className="flex items-center gap-4 sm:gap-6 w-full">
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-blue-200 flex items-center justify-center text-2xl sm:text-3xl font-bold text-blue-700">
-              {club.initials}
+              {presidentClub ? presidentClub.initials : "?"}
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 mb-1">
-                {club.name}
+                {presidentClub ? presidentClub.name : "No club found"}
               </h1>
               <div className="text-slate-500 text-sm sm:text-base lg:text-lg">
                 President Dashboard
@@ -163,37 +331,89 @@ export default function PresidentPage() {
             <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base" onClick={() => setShowEventForm(true)}>
               Create Event
             </Button>
-            <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base">
+            <Button className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-semibold text-base" onClick={() => setShowCreatePostForm(true)}>
               Create Post
             </Button>
           </div>
         </div>
 
         {/* Event Creation Popup */}
-        {showEventForm && clubs.length > 0 && (
-          <PopupForm
-            method="POST"
-            submitLabel="Create Event"
-            fields={[
-              { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
-              { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
-              { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
-              { name: "type", label: "Type", dataType: "string", options: [
-                { value: "Workshop", label: "Workshop" },
-                { value: "Hackathon", label: "Hackathon" },
-                { value: "Seminar", label: "Seminar" },
-                { value: "Competition", label: "Competition" },
-                { value: "Meetup", label: "Meetup" },
-                { value: "Other", label: "Other" },
-              ] },
-              { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
-              { name: "club", label: "Club", dataType: "hidden" },
-            ]}
-            initialValues={{ club: clubs[0]._id }}
-            onClose={() => setShowEventForm(false)}
-            endpoint="/events"
-          />
-        )}
+          {showEventForm && presidentClub && presidentClub.id && (
+            <PopupForm
+              method="POST"
+              submitLabel="Create Event"
+              fields={[ 
+                { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
+                { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
+                { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
+                { name: "type", label: "Type", dataType: "select", options: [
+                  { value: "", label: "Select Event Type" },
+                  { value: "Workshop", label: "Workshop" },
+                  { value: "Hackathon", label: "Hackathon" },
+                  { value: "Seminar", label: "Seminar" },
+                  { value: "Competition", label: "Competition" },
+                  { value: "Meetup", label: "Meetup" },
+                  { value: "Other", label: "Other" },
+                ] },
+                { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+                { name: "club", label: "Club", dataType: "hidden" },
+              ]}
+              initialValues={{ club: presidentClub.id }}
+              onClose={() => setShowEventForm(false)}
+              endpoint="/events"
+            />
+          )}
+          {showEventForm && (!presidentClub || !presidentClub.id) && (
+            <div className="p-4 text-red-600">
+              {clubsLoading ? "Loading club data..." : "No club found for president. Cannot create event."}
+            </div>
+          )}
+
+        {/* Post Creation Popup */}
+          {showCreatePostForm && presidentClub && presidentClub.id && (
+            <PopupForm
+              method="POST"
+              submitLabel="Create Post"
+              fields={[
+                { name: "title", label: "Title", dataType: "string", placeholder: "Post Title" },
+                { name: "description", label: "Body", dataType: "textarea", placeholder: "Write your post content here..." },
+                { name: "tag", label: "Tag", dataType: "select", options: [
+                  { value: "ANNOUNCEMENT", label: "Announcement" },
+                  { value: "RESOURCES", label: "Resources" },
+                  { value: "EVENT", label: "Event" },
+                  { value: "NEWS", label: "News" },
+                  { value: "GENERAL", label: "General" },
+                ] },
+                { name: "imageUrl", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+                { name: "club", label: "Club", dataType: "hidden" },
+              ]}
+              initialValues={{ club: presidentClub.id }}
+              onClose={() => setShowCreatePostForm(false)}
+              onSubmit={async (formValues) => {
+                try {
+                  const { request } = await import("../api/client.js");
+                  const response = await request("/posts", {
+                    method: "POST",
+                    body: JSON.stringify(formValues),
+                  });
+                  
+                  // Add the new post to the list
+                  const newPost = response?.data || response;
+                  setPosts(prevPosts => [newPost, ...prevPosts]);
+                  
+                  setShowCreatePostForm(false);
+                } catch (error) {
+                  console.error("Failed to create post:", error);
+                  throw error; // Re-throw to show error in PopupForm
+                }
+              }}
+            />
+          )}
+          {showCreatePostForm && (!presidentClub || !presidentClub.id) && (
+            <div className="p-4 text-red-600">
+              {clubsLoading ? "Loading club data..." : "No club found for president. Cannot create post."}
+            </div>
+          )}
 
         {/* Attendance Check-In */}
         <div className="mb-12">
@@ -208,6 +428,7 @@ export default function PresidentPage() {
                   value={selectedEvent}
                   onChange={(e) => setSelectedEvent(e.target.value)}
                 >
+                  <option value="">Select an event</option>
                   {events.length === 0 ? (
                     <option value="" disabled>{eventsLoading ? "Loading events..." : "No events found"}</option>
                   ) : (
@@ -222,12 +443,17 @@ export default function PresidentPage() {
               <Button
                 className="w-full bg-blue-600 text-white"
                 onClick={() => {
+                  if (!selectedEvent) {
+                    alert("Please select an event first");
+                    return;
+                  }
                   const event = events.find((ev) => ev.id === selectedEvent);
-                  const value = event
-                    ? `Event: ${event.title}\nDate: ${event.date ? new Date(event.date).toLocaleString() : "Date TBA"}\nClub: ${event.host}`
-                    : "";
-                  setQrValue(value);
-                  setQrGenerated(true);
+                  if (event) {
+                    // Create a URL that will trigger attendance marking when scanned
+                    const attendanceUrl = `${window.location.origin}/mark-attendance?eventId=${event.id}`;
+                    setQrValue(attendanceUrl);
+                    setQrGenerated(true);
+                  }
                 }}
               >
                 Generate QR
@@ -266,7 +492,7 @@ export default function PresidentPage() {
                   {editingId === ev.id ? (
                     <>
                       <input
-                        className="text-lg font-semibold text-slate-900 mb-1 border rounded p-1 mb-2"
+                        className="text-lg font-semibold text-slate-900 mb-2 border rounded p-1"
                         value={editForm.title}
                         onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
                       />
@@ -294,15 +520,19 @@ export default function PresidentPage() {
                       </>
                     ) : (
                       <>
-                        <Button variant="secondary" className="w-1/2" onClick={() => {
-                          setEditingId(ev.id);
-                          setEditForm({ title: ev.title, description: ev.description });
-                        }}>Edit</Button>
-                        <Button variant="outline" className="w-1/2 text-red-600 border-red-200" onClick={() => setEvents((prev) => prev.filter((e) => e.id !== ev.id))}>Delete</Button>
+                        <Button variant="secondary" className="w-1/3" onClick={() => handleEventEdit(ev)}>Edit</Button>
+                        <Button variant="outline" className="w-1/3 text-red-600 border-red-200" onClick={() => handleEventDelete(ev.id)}>Delete</Button>
+                        <Button variant="outline" className="w-1/3 text-blue-600 border-blue-200" onClick={() => setViewingRegistrations(ev)}>Registrations</Button>
                       </>
                     )}
                   </div>
-                  <Button variant="ghost" className="w-full border border-blue-200 text-blue-600" onClick={() => alert("joined students will be notified")}>Notify By email</Button>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full border border-blue-200 text-blue-600" 
+                    onClick={() => handleNotifyByEmail(ev)}
+                  >
+                    Notify By email
+                  </Button>
                 </div>
               ))}
             </div>
@@ -312,11 +542,18 @@ export default function PresidentPage() {
         {/* Manage Posts */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">Manage Posts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} type="president" onEdit={handlePostEdit} />
-            ))}
-          </div>
+          {postsError && <p className="text-sm text-red-600 mb-3">{postsError}</p>}
+          {postsLoading ? (
+            <p className="text-sm text-slate-500">Loading posts...</p>
+          ) : posts.length === 0 ? (
+            <p className="text-sm text-slate-500">No posts found.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {posts.map((post) => (
+                <PostCard key={post.id} post={post} type="president" onEdit={handlePostEdit} onDelete={handlePostDelete} />
+              ))}
+            </div>
+          )}
         </div>
       </main>
       {/* Post Edit Popup */}
@@ -326,20 +563,151 @@ export default function PresidentPage() {
           submitLabel="Save Changes"
           fields={[
             { name: "title", label: "Title", dataType: "string" },
-            { name: "body", label: "Body", dataType: "text" },
+            { name: "description", label: "Body", dataType: "textarea" },
             { name: "tag", label: "Tag", dataType: "string" },
           ]}
           initialValues={{
             title: editingPost.title,
-            body: editingPost.body,
+            description: editingPost.body,
             tag: editingPost.tag,
           }}
           onClose={closePostEditor}
-          onSubmit={(values) => {
-            setPosts((prev) => prev.map((post) => post.id === editingPost.id ? { ...post, ...values } : post));
-            closePostEditor();
+          onSubmit={async (values) => {
+            try {
+              const { updatePost } = await import("../api/posts.js");
+              
+              // Update the post in the backend
+              const updatedPost = await updatePost(editingPost.id, {
+                title: values.title,
+                description: values.description,
+                tag: values.tag
+              });
+              
+              // Update the post in local state
+              setPosts((prev) => prev.map((post) => 
+                post.id === editingPost.id 
+                  ? { ...post, title: values.title, body: values.description, tag: values.tag }
+                  : post
+              ));
+              
+              closePostEditor();
+            } catch (error) {
+              console.error("Failed to update post:", error);
+              throw error; // Re-throw to show error in PopupForm
+            }
           }}
         />
+      )}
+
+      {/* Event Edit Popup */}
+      {editingEvent && (
+        <PopupForm
+          method="PUT"
+          submitLabel="Update Event"
+          fields={[
+            { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
+            { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
+            { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
+            { name: "type", label: "Type", dataType: "select", options: [
+              { value: "Workshop", label: "Workshop" },
+              { value: "Hackathon", label: "Hackathon" },
+              { value: "Seminar", label: "Seminar" },
+              { value: "Competition", label: "Competition" },
+              { value: "Meetup", label: "Meetup" },
+              { value: "Other", label: "Other" },
+            ] },
+            { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+          ]}
+          initialValues={{
+            title: editingEvent.title,
+            description: editingEvent.description,
+            date: editingEvent.date ? new Date(editingEvent.date).toISOString().split('T')[0] : '',
+            type: editingEvent.type || '',
+            imageURL: editingEvent.imageURL || '',
+          }}
+          onClose={closeEventEditor}
+          onSubmit={async (formValues) => {
+            try {
+              const { request } = await import("../api/client.js");
+              const response = await request(`/events/${editingEvent.id}`, {
+                method: "PUT",
+                body: JSON.stringify(formValues),
+              });
+              
+              // Update the event in the list with the response data
+              const updatedEvent = response?.data || response;
+              setEvents(prevEvents => 
+                prevEvents.map(event => 
+                  event.id === editingEvent.id 
+                    ? { 
+                        ...event, 
+                        ...formValues,
+                        ...updatedEvent,
+                        id: updatedEvent._id || updatedEvent.id || event.id
+                      } 
+                    : event
+                )
+              );
+              
+              closeEventEditor();
+            } catch (error) {
+              console.error("Failed to update event:", error);
+              throw error; // Re-throw to show error in PopupForm
+            }
+          }}
+        />
+      )}
+
+      {/* Event Registrations Popup */}
+      {viewingRegistrations && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-96 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">
+                Registrations for "{viewingRegistrations.title}"
+              </h3>
+              <button
+                onClick={() => setViewingRegistrations(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600">
+                Total Registrations: {viewingRegistrations.registered || 0}
+              </p>
+            </div>
+
+            {viewingRegistrations.raw?.registrations && viewingRegistrations.raw.registrations.length > 0 ? (
+              <div className="space-y-2">
+                {viewingRegistrations.raw.registrations.map((user, index) => (
+                  <div key={user._id || index} className="flex items-center p-2 border rounded">
+                    <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
+                      {(user.name || user.email || `User ${index + 1}`).charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium text-sm">{user.name || 'Name not available'}</div>
+                      <div className="text-xs text-gray-500">{user.email || 'Email not available'}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No registrations yet.</p>
+            )}
+            
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setViewingRegistrations(null)}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

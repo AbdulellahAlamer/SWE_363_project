@@ -10,6 +10,7 @@ import PostsPage from "./pages/PostsPage.jsx";
 import MyProfilePage from "./pages/MyProfilePage.jsx";
 import UserManagementPage from "./pages/UserManagementPage.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import MarkAttendancePage from "./pages/MarkAttendancePage.jsx";
 import { getStoredSession, roleRoutes } from "./api/auth.js";
 
 const routes = {
@@ -17,6 +18,7 @@ const routes = {
   "/login": LoginPage,
   "/register": RegisterPage,
   "/reset-password": ResetPassword,
+  "/mark-attendance": MarkAttendancePage,
   "/admin": AdminPage,
   "/president": PresidentPage,
   "/clubs": ClubsPage,
@@ -32,7 +34,8 @@ const isAuthPath = (path) =>
   path === "/" ||
   path === "/login" ||
   path === "/register" ||
-  path === "/reset-password";
+  path === "/reset-password" ||
+  path === "/mark-attendance";
 
 const normalizePath = (pathname) => {
   if (pathname === "/") return "/";

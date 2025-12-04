@@ -1,20 +1,50 @@
 import { useEffect, useState } from "react";
+import { likePost } from "../api/posts.js";
+import { getStoredSession } from "../api/auth.js";
 
-function PostCard({ post, onEdit, type = "student" }) {
+function PostCard({ post, onEdit, onDelete, type = "student" }) {
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [liked, setLiked] = useState(false);
+  const [liking, setLiking] = useState(false);
   const canLike = type === "student";
   const canEdit = type === "president";
 
   useEffect(() => {
     setLikesCount(post.likes || 0);
-    setLiked(false);
-  }, [post.id, post.likes]);
+    
+    // Check if current user has liked this post
+    const session = getStoredSession();
+    if (session?.user?.id && post.raw?.likes) {
+      const hasLiked = post.raw.likes.some(like => 
+        (typeof like === 'string' ? like : like._id || like.id) === session.user.id
+      );
+      setLiked(hasLiked);
+    } else {
+      setLiked(false);
+    }
+  }, [post.id, post.likes, post.raw?.likes]);
 
-  const handleLikeToggle = () => {
-    if (!canLike) return;
-    setLikesCount((prev) => prev + (liked ? -1 : 1));
-    setLiked((prev) => !prev);
+  const handleLikeToggle = async () => {
+    if (!canLike || liking) return;
+    
+    const session = getStoredSession();
+    if (!session || !session.user) {
+      alert("Please log in to like posts");
+      return;
+    }
+
+    try {
+      setLiking(true);
+      const response = await likePost(post.id);
+      
+      setLikesCount(response.likesCount);
+      setLiked(response.liked);
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+      alert("Failed to update like. Please try again.");
+    } finally {
+      setLiking(false);
+    }
   };
 
   return (
@@ -33,14 +63,35 @@ function PostCard({ post, onEdit, type = "student" }) {
         </div>
 
         {canEdit && (
-          <button
-            type="button"
-            onClick={() => onEdit?.(post.id)}
-            className="text-xs font-medium text-blue-600 hover:text-blue-800"
-            aria-label="Edit post"
-          >
-            Edit
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onEdit?.(post)}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800"
+              aria-label="Edit post"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const postId = post.raw?._id || post.id || post._id;
+                console.log("[DEBUG] PostCard Delete clicked:", {
+                  postTitle: post.title,
+                  postId: postId,
+                  rawId: post.raw?._id,
+                  id: post.id,
+                  _id: post._id,
+                  fullPost: post
+                });
+                onDelete?.(postId);
+              }}
+              className="text-xs font-medium text-red-600 hover:text-red-800"
+              aria-label="Delete post"
+            >
+              Delete
+            </button>
+          </div>
         )}
       </header>
 
@@ -48,7 +99,7 @@ function PostCard({ post, onEdit, type = "student" }) {
         <h3 className="text-lg font-semibold text-slate-900 mb-2">
           {post.title}
         </h3>
-        <p className="text-sm text-slate-600 mb-4 line-clamp-3">{post.body}</p>
+        <p className="text-sm text-slate-600 mb-4 whitespace-pre-wrap">{post.body}</p>
 
         {/* -- FIX APPLIED HERE --
           1. Changed 'object-cover' to 'object-contain' to show the full image without cropping.
@@ -80,14 +131,15 @@ function PostCard({ post, onEdit, type = "student" }) {
             <button
               type="button"
               onClick={handleLikeToggle}
+              disabled={liking}
               className={`text-xs font-medium rounded-full px-3 py-1 border transition ${
                 liked
                   ? "bg-blue-600 text-white border-blue-600"
                   : "border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600"
-              }`}
+              } ${liking ? "opacity-50 cursor-not-allowed" : ""}`}
               aria-pressed={liked}
             >
-              {liked ? "Liked" : "Like"}
+              {liking ? "..." : (liked ? "Liked" : "Like")}
             </button>
           )}
         </div>

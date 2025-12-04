@@ -81,3 +81,23 @@ export async function fetchEventsByClub(clubId) {
   if (!clubId) throw new Error("Club id is required");
   return fetchEvents({ clubId });
 }
+
+export async function joinEvent(eventId) {
+  if (!eventId) throw new Error("Event id is required");
+  
+  const res = await request(`/events/${eventId}/join`, {
+    method: "POST",
+    body: JSON.stringify({}), // Empty body since userId comes from auth
+  });
+  return res;
+}
+
+export async function leaveEvent(eventId) {
+  if (!eventId) throw new Error("Event id is required"); 
+  
+  const res = await request(`/events/${eventId}/leave`, {
+    method: "POST",
+    body: JSON.stringify({}), // Empty body since userId comes from auth
+  });
+  return res;
+}

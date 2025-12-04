@@ -6,7 +6,7 @@ import FormField from "../components/FormField.jsx";
 import ClubRow from "../components/ClubRow.jsx";
 import LogoUpload from "../components/LogoUpload.jsx";
 import ButtonGroup from "../components/ButtonGroup.jsx";
-import { adminStatistics as initialAdminStatistics } from "../assets/data.js";
+// Removed hardcoded statistics import
 import {
   fetchClubs,
   createClub,
@@ -19,7 +19,12 @@ import { fetchEvents } from "../api/events";
 export default function AdminPage() {
     const [presidents, setPresidents] = useState([]);
   const [clubs, setClubs] = useState([]);
-  const [adminStatistics, setAdminStatistics] = useState(initialAdminStatistics);
+  const [adminStatistics, setAdminStatistics] = useState([
+    { label: "Total Clubs", value: "-" },
+    { label: "Upcoming Events", value: "-" },
+    { label: "Event Attendance", value: "-" },
+    { label: "New Registrations", value: "-" },
+  ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -64,10 +69,10 @@ export default function AdminPage() {
       setAdminStatistics((prevStats) =>
         prevStats.map((stat) => {
           if (stat.label === "Total Clubs") {
-            return { ...stat, value: String(clubsData.length) };
+            return { ...stat, value: clubsData ? String(clubsData.length) : "-" };
           }
           if (stat.label === "Upcoming Events") {
-            return { ...stat, value: String(eventsData.length) };
+            return { ...stat, value: eventsData ? String(eventsData.length) : "-" };
           }
           return stat;
         })

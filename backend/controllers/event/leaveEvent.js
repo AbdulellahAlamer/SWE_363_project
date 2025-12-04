@@ -5,10 +5,10 @@ import User from "../../models/user.js";
 const leaveEvent = async (req, res) => {
 	try {
 		const { eventId } = req.params;
-		// You may get userId from req.user (if using auth middleware) or from body/params
-		const userId = req.user?._id || req.body.userId || req.params.userId;
-		if (!eventId || !userId) {
-			return res.status(400).json({ message: "Event ID and User ID are required." });
+		const userId = req.user.id; // Get user ID from authenticated user
+		
+		if (!eventId) {
+			return res.status(400).json({ message: "Event ID is required." });
 		}
 
 		const event = await Event.findById(eventId);

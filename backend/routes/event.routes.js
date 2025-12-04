@@ -10,6 +10,7 @@ import deleteEvent from "../controllers/event/deleteEvent.js";
 import joinEvent from "../controllers/event/joinEvent.js";
 import leaveEvent from "../controllers/event/leaveEvent.js";
 import notifyByEmail from "../controllers/event/notifyByEmail.js";
+import markAttendance from "../controllers/event/markAttendance.js";
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ router.delete("/:eventId", protectRoute, restrictTo("admin", "president"), delet
 // Participant actions
 router.post("/:eventId/join", protectRoute, joinEvent);
 router.post("/:eventId/leave", protectRoute, leaveEvent);
+router.post("/:eventId/attendance", protectRoute, markAttendance);
 
 // Notify registered users
 router.post(

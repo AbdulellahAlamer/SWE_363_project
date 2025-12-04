@@ -101,6 +101,7 @@ export const sampleEvents = [
 
 export const adminClubSeeds = [
   {
+    _id: "65a123456789abcdef012345",
     id: "club-cs",
     initials: "CS",
     name: "Computer Club",
@@ -113,6 +114,7 @@ export const adminClubSeeds = [
     contactEmail: "csclub@kfupm.edu.sa",
   },
   {
+    _id: "65a123456789abcdef012346",
     id: "club-ie",
     initials: "IE",
     name: "Industrial Engineering Society",
@@ -125,6 +127,7 @@ export const adminClubSeeds = [
     contactEmail: "ie.society@kfupm.edu.sa",
   },
   {
+    _id: "65a123456789abcdef012347",
     id: "club-me",
     initials: "ME",
     name: "Mechanical Engineers",
