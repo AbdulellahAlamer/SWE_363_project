@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { request } from "../api/client.js";
 
 export default function MarkAttendancePage() {
   const [status, setStatus] = useState("loading");
@@ -26,25 +27,15 @@ export default function MarkAttendancePage() {
           return;
         }
 
-        // Make attendance request
-        const response = await fetch(`/api/v1/events/${eventId}/attendance`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${storedToken}`,
-          },
-        });
+        // Make attendance request to backend route
+        const data = await request(
+          `/events/mark-attendance?eventId=${eventId}`
+        );
 
-        const data = await response.json();
-
-        if (response.ok) {
-          setStatus("success");
-          setMessage("Attendance marked successfully!");
-          setEventInfo(data.data);
-        } else {
-          setStatus("error");
-          setMessage(data.message || "Failed to mark attendance");
-        }
+        setStatus("success");
+        setMessage("Attendance marked successfully!");
+        setEventInfo(data?.data || data);
+        window.location.href = "/my-profile";
       } catch (error) {
         setStatus("error");
         setMessage("Error marking attendance: " + error.message);
@@ -71,15 +62,27 @@ export default function MarkAttendancePage() {
             <h2 className="text-xl font-semibold text-slate-900 mb-2">
               Marking Attendance...
             </h2>
-            <p className="text-slate-600">Please wait while we process your attendance.</p>
+            <p className="text-slate-600">
+              Please wait while we process your attendance.
+            </p>
           </>
         )}
 
         {status === "success" && (
           <>
             <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">
@@ -88,7 +91,9 @@ export default function MarkAttendancePage() {
             <p className="text-slate-600 mb-4">{message}</p>
             {eventInfo && (
               <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                <p className="font-medium text-blue-900">{eventInfo.eventTitle}</p>
+                <p className="font-medium text-blue-900">
+                  {eventInfo.eventTitle}
+                </p>
                 <p className="text-sm text-blue-700">
                   Total Attendees: {eventInfo.attendanceCount}
                 </p>
@@ -100,8 +105,18 @@ export default function MarkAttendancePage() {
         {status === "error" && (
           <>
             <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              <svg
+                className="w-8 h-8 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                ></path>
               </svg>
             </div>
             <h2 className="text-xl font-semibold text-slate-900 mb-2">

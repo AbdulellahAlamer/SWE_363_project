@@ -4,8 +4,12 @@ import protectRoute from "../middleware/protectRoute.js";
 import restrictTo from "../middleware/restrictTo.js";
 import getAllEvents from "../controllers/event/getAllEvents.js";
 import getEventsOfClub from "../controllers/event/getEventsOfClub.js";
-import createEvent, { upload as createUpload } from "../controllers/event/createEvent.js";
-import editEvent, { upload as editUpload } from "../controllers/event/editEvent.js";
+import createEvent, {
+  upload as createUpload,
+} from "../controllers/event/createEvent.js";
+import editEvent, {
+  upload as editUpload,
+} from "../controllers/event/editEvent.js";
 import deleteEvent from "../controllers/event/deleteEvent.js";
 import joinEvent from "../controllers/event/joinEvent.js";
 import leaveEvent from "../controllers/event/leaveEvent.js";
@@ -19,12 +23,12 @@ router.get("/", protectRoute, getAllEvents);
 router.get("/club/:clubId", getEventsOfClub);
 
 // Event management (admin/president)
-router.post("/", createUpload.single('image'), createEvent);
+router.post("/", createUpload.single("image"), createEvent);
 router.put(
   "/:eventId",
   protectRoute,
   restrictTo("admin", "president"),
-  editUpload.single('image'),
+  editUpload.single("image"),
   editEvent
 );
 router.delete(
@@ -37,7 +41,7 @@ router.delete(
 // Participant actions
 router.post("/:eventId/join", protectRoute, joinEvent);
 router.post("/:eventId/leave", protectRoute, leaveEvent);
-router.post("/:eventId/attendance", protectRoute, markAttendance);
+router.get("/mark-attendance", protectRoute, markAttendance);
 
 // Notify registered users
 router.post(

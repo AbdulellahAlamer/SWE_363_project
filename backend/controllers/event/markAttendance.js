@@ -2,31 +2,46 @@ import Event from "../../models/Event.js";
 
 export default async (req, res) => {
   try {
-    const { eventId } = req.params;
-    const userId = req.user._id;
+    const eventId =
+      req.params.eventId || req.body.eventId || req.query.eventId;
+    const userId = req.user?._id;
+
+    if (!eventId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Event ID is required to mark attendance",
+      });
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        status: "error",
+        message: "Authentication required",
+      });
+    }
 
     // Find the event
     const event = await Event.findById(eventId);
     if (!event) {
-      return res.status(404).json({ 
-        status: "error", 
-        message: "Event not found" 
+      return res.status(404).json({
+        status: "error",
+        message: "Event not found",
       });
     }
 
     // Check if user is already registered for the event
     if (!event.registrations.includes(userId)) {
-      return res.status(400).json({ 
-        status: "error", 
-        message: "You must be registered for this event to mark attendance" 
+      return res.status(400).json({
+        status: "error",
+        message: "You must be registered for this event to mark attendance",
       });
     }
 
     // Check if user already marked attendance
     if (event.attendees && event.attendees.includes(userId)) {
-      return res.status(400).json({ 
-        status: "error", 
-        message: "Attendance already marked for this event" 
+      return res.status(400).json({
+        status: "error",
+        message: "Attendance already marked for this event",
       });
     }
 
@@ -39,19 +54,19 @@ export default async (req, res) => {
     event.attendees.push(userId);
     await event.save();
 
-    res.json({ 
-      status: "success", 
+    res.json({
+      status: "success",
       message: "Attendance marked successfully",
       data: {
         eventId: event._id,
         eventTitle: event.title,
-        attendanceCount: event.attendees.length
-      }
+        attendanceCount: event.attendees.length,
+      },
     });
   } catch (err) {
-    res.status(500).json({ 
-      status: "error", 
-      message: err.message 
+    res.status(500).json({
+      status: "error",
+      message: err.message,
     });
   }
 };

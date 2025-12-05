@@ -37,6 +37,8 @@ export function getStoredSession() {
     try {
       user = JSON.parse(userRaw);
     } catch (error) {
+      console.log(error);
+
       // If parsing fails, clear the bad value and treat as no session
       localStorage.removeItem("user");
     }

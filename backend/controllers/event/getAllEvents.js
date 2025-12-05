@@ -14,7 +14,13 @@ const getAllEvents = async (req, res) => {
     if (clubId) {
       filter.club = clubId;
     }
-    if (userId) {
+
+    if (userIdFromQuery) {
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId)
+        ? new mongoose.Types.ObjectId(userId)
+        : userId;
+      filter.attendees = { $in: [userObjectId] };
+    } else if (userIdFromAuth) {
       const userObjectId = mongoose.Types.ObjectId.isValid(userId)
         ? new mongoose.Types.ObjectId(userId)
         : userId;

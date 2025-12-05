@@ -55,9 +55,12 @@ function App() {
   const authLayout = isAuthPath(path);
   const isRegister = path === "/register";
   const session = getStoredSession();
-  const authedDestination = session?.user
-    ? getDestinationForUser(session.user)
-    : null;
+  let authedDestination = null;
+  if (path != "/reset-password" && path != "/mark-attendance") {
+    authedDestination = session?.user
+      ? getDestinationForUser(session.user)
+      : null;
+  }
 
   // Keep authenticated users off the auth screens
   if (authLayout && authedDestination && path !== authedDestination) {

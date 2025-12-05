@@ -15,13 +15,13 @@ const toUiStatus = (status, date) => {
   return "past";
 };
 
-const extractEventsArray = (payload) => {
-  if (!payload) return [];
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.events)) return payload.events;
-  return [];
-};
+// const extractEventsArray = (payload) => {
+//   if (!payload) return [];
+//   if (Array.isArray(payload)) return payload;
+//   if (Array.isArray(payload.data)) return payload.data;
+//   if (Array.isArray(payload.events)) return payload.events;
+//   return [];
+// };
 
 export const normalizeEvent = (event = {}) => {
   const clubObject =
@@ -86,7 +86,7 @@ export async function fetchEventsByClub(clubId) {
 
 export async function joinEvent(eventId) {
   if (!eventId) throw new Error("Event id is required");
-  
+
   const res = await request(`/events/${eventId}/join`, {
     method: "POST",
     body: JSON.stringify({}), // Empty body since userId comes from auth
@@ -95,8 +95,8 @@ export async function joinEvent(eventId) {
 }
 
 export async function leaveEvent(eventId) {
-  if (!eventId) throw new Error("Event id is required"); 
-  
+  if (!eventId) throw new Error("Event id is required");
+
   const res = await request(`/events/${eventId}/leave`, {
     method: "POST",
     body: JSON.stringify({}), // Empty body since userId comes from auth
