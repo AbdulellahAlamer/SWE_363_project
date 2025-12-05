@@ -1,18 +1,24 @@
-
+import mongoose from "mongoose";
 import Event from "../../models/Event.js";
 
 // Controller to get all events (optionally filtered by club via query)
 const getAllEvents = async (req, res) => {
   try {
     const clubId = req.query.club || req.query.clubId || req.query.club_id;
-    const userId = req.query.user || req.query.userId || req.query.user_id;
+    const userIdFromAuth = req.user?.id || req.user?._id;
+    const userIdFromQuery =
+      req.query.user || req.query.userId || req.query.user_id;
+    const userId = userIdFromAuth || userIdFromQuery;
     const filter = {};
 
     if (clubId) {
       filter.club = clubId;
     }
     if (userId) {
-      filter.registrations = userId;
+      const userObjectId = mongoose.Types.ObjectId.isValid(userId)
+        ? new mongoose.Types.ObjectId(userId)
+        : userId;
+      filter.registrations = { $ne: userObjectId };
     }
 
     const events = await Event.find(filter)

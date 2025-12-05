@@ -15,13 +15,23 @@ import markAttendance from "../controllers/event/markAttendance.js";
 const router = express.Router();
 
 // Public fetch endpoints
-router.get("/", getAllEvents);
+router.get("/", protectRoute, getAllEvents);
 router.get("/club/:clubId", getEventsOfClub);
 
 // Event management (admin/president)
 router.post("/", createEvent);
-router.put("/:eventId", protectRoute, restrictTo("admin", "president"), editEvent);
-router.delete("/:eventId", protectRoute, restrictTo("admin", "president"), deleteEvent);
+router.put(
+  "/:eventId",
+  protectRoute,
+  restrictTo("admin", "president"),
+  editEvent
+);
+router.delete(
+  "/:eventId",
+  protectRoute,
+  restrictTo("admin", "president"),
+  deleteEvent
+);
 
 // Participant actions
 router.post("/:eventId/join", protectRoute, joinEvent);
