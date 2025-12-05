@@ -46,6 +46,8 @@ export const normalizeEvent = (event = {}) => {
     host: clubObject?.name || event.host || event.clubName || "Club",
     hostId: clubObject?._id || event.hostId || event.clubId || event.club,
     clubId: clubObject?._id || event.clubId || event.club,
+    imageData: event.imageData || "", // Add imageData field
+    imageURL: event.imageURL || "", // Keep imageURL for backward compatibility
     registered:
       typeof event.registered === "number"
         ? event.registered

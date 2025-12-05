@@ -346,7 +346,7 @@ export default function PresidentPage() {
                 { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
                 { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
                 { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
-                { name: "type", label: "Type", dataType: "select", options: [
+                { name: "type", label: "Event Type", dataType: "select", options: [
                   { value: "", label: "Select Event Type" },
                   { value: "Workshop", label: "Workshop" },
                   { value: "Hackathon", label: "Hackathon" },
@@ -355,7 +355,7 @@ export default function PresidentPage() {
                   { value: "Meetup", label: "Meetup" },
                   { value: "Other", label: "Other" },
                 ] },
-                { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+                { name: "image", label: "Event Image", dataType: "file", placeholder: "Upload event image", optional: true },
                 { name: "club", label: "Club", dataType: "hidden" },
               ]}
               initialValues={{ club: presidentClub.id }}
@@ -384,29 +384,12 @@ export default function PresidentPage() {
                   { value: "NEWS", label: "News" },
                   { value: "GENERAL", label: "General" },
                 ] },
-                { name: "imageUrl", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
+                { name: "image", label: "Post Image", dataType: "file", placeholder: "Upload post image", optional: true },
                 { name: "club", label: "Club", dataType: "hidden" },
               ]}
               initialValues={{ club: presidentClub.id }}
               onClose={() => setShowCreatePostForm(false)}
-              onSubmit={async (formValues) => {
-                try {
-                  const { request } = await import("../api/client.js");
-                  const response = await request("/posts", {
-                    method: "POST",
-                    body: JSON.stringify(formValues),
-                  });
-                  
-                  // Add the new post to the list
-                  const newPost = response?.data || response;
-                  setPosts(prevPosts => [newPost, ...prevPosts]);
-                  
-                  setShowCreatePostForm(false);
-                } catch (error) {
-                  console.error("Failed to create post:", error);
-                  throw error; // Re-throw to show error in PopupForm
-                }
-              }}
+              endpoint="/posts"
             />
           )}
           {showCreatePostForm && (!presidentClub || !presidentClub.id) && (
@@ -488,7 +471,15 @@ export default function PresidentPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {events.slice(0, 3).map((ev) => (
                 <div key={ev.id} className="flex flex-col bg-white rounded-2xl shadow p-6">
-                  <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
+                  {ev.imageData || ev.imageURL ? (
+                    <img
+                      src={ev.imageData || ev.imageURL}
+                      alt={ev.title}
+                      className="h-24 rounded-xl mb-4 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-24 rounded-xl bg-linear-to-br from-blue-100 to-indigo-100 mb-4" />
+                  )}
                   {editingId === ev.id ? (
                     <>
                       <input
@@ -558,104 +549,442 @@ export default function PresidentPage() {
       </main>
       {/* Post Edit Popup */}
       {editingPost && (
-        <PopupForm
-          method="PUT"
-          submitLabel="Save Changes"
-          fields={[
-            { name: "title", label: "Title", dataType: "string" },
-            { name: "description", label: "Body", dataType: "textarea" },
-            { name: "tag", label: "Tag", dataType: "string" },
-          ]}
-          initialValues={{
-            title: editingPost.title,
-            description: editingPost.body,
-            tag: editingPost.tag,
-          }}
-          onClose={closePostEditor}
-          onSubmit={async (values) => {
-            try {
-              const { updatePost } = await import("../api/posts.js");
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            <header className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Edit Post</h2>
+              <button
+                type="button"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                onClick={closePostEditor}
+                aria-label="Close popup form"
+              >
+                ✕
+              </button>
+            </header>
+
+            <form className="space-y-4" onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
               
-              // Update the post in the backend
-              const updatedPost = await updatePost(editingPost.id, {
-                title: values.title,
-                description: values.description,
-                tag: values.tag
-              });
-              
-              // Update the post in local state
-              setPosts((prev) => prev.map((post) => 
-                post.id === editingPost.id 
-                  ? { ...post, title: values.title, body: values.description, tag: values.tag }
-                  : post
-              ));
-              
-              closePostEditor();
-            } catch (error) {
-              console.error("Failed to update post:", error);
-              throw error; // Re-throw to show error in PopupForm
-            }
-          }}
-        />
+              try {
+                const deleteImage = formData.get('deleteImage') === 'on';
+                const newImageFile = formData.get('image');
+                const hasNewFile = newImageFile && newImageFile.size > 0;
+
+                console.log('[Edit Post] Delete image checked:', deleteImage);
+                console.log('[Edit Post] Has new file:', hasNewFile);
+
+                let response;
+                
+                if (hasNewFile) {
+                  // New image upload takes priority
+                  const submitFormData = new FormData();
+                  
+                  // Add form fields
+                  submitFormData.append('title', formData.get('title'));
+                  submitFormData.append('description', formData.get('description'));
+                  submitFormData.append('tag', formData.get('tag'));
+                  submitFormData.append('image', newImageFile);
+                  
+                  const token = localStorage.getItem("token");
+                  const headers = {};
+                  if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                  }
+                  
+                  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1"}/posts/${editingPost.id}`, {
+                    method: "PUT",
+                    headers,
+                    body: submitFormData,
+                  });
+                  
+                  if (!res.ok) {
+                    throw new Error(`Request failed with status ${res.status}`);
+                  }
+                  
+                  response = await res.json();
+                } else if (deleteImage) {
+                  // Delete image without uploading new one
+                  const submitFormData = new FormData();
+                  
+                  // Add form fields
+                  submitFormData.append('title', formData.get('title'));
+                  submitFormData.append('description', formData.get('description'));
+                  submitFormData.append('tag', formData.get('tag'));
+                  submitFormData.append('deleteImage', 'true');
+                  
+                  console.log('[Edit Post] Sending delete image request');
+                  
+                  const token = localStorage.getItem("token");
+                  const headers = {};
+                  if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                  }
+                  
+                  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1"}/posts/${editingPost.id}`, {
+                    method: "PUT",
+                    headers,
+                    body: submitFormData,
+                  });
+                  
+                  if (!res.ok) {
+                    throw new Error(`Request failed with status ${res.status}`);
+                  }
+                  
+                  response = await res.json();
+                } else {
+                  // Use regular JSON for non-file updates
+                  const { request } = await import("../api/client.js");
+                  const updateData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    tag: formData.get('tag'),
+                  };
+                  
+                  response = await request(`/posts/${editingPost.id}`, {
+                    method: "PUT",
+                    body: JSON.stringify(updateData),
+                  });
+                }
+                
+                console.log('[Edit Post] Response:', response);
+                
+                // Update the post in the list
+                const updatedPost = response?.data || response;
+                console.log('[Edit Post] Updated post from backend:', updatedPost);
+                
+                setPosts(prevPosts => {
+                  const newPosts = prevPosts.map(post => 
+                    post.id === editingPost.id 
+                      ? { 
+                          ...post, 
+                          ...updatedPost,
+                          id: updatedPost._id || updatedPost.id || post.id
+                        } 
+                      : post
+                  );
+                  console.log('[Edit Post] Updated posts array:', newPosts);
+                  return newPosts;
+                });
+                
+                closePostEditor();
+              } catch (error) {
+                console.error("Failed to update post:", error);
+                alert("Failed to update post. Please try again.");
+              }
+            }}>
+              {/* Title Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Title</span>
+                <input
+                  name="title"
+                  type="text"
+                  defaultValue={editingPost.title}
+                  required
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                />
+              </label>
+
+              {/* Description Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Body</span>
+                <textarea
+                  name="description"
+                  defaultValue={editingPost.body}
+                  rows={4}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 resize-vertical"
+                />
+              </label>
+
+              {/* Tag Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Tag</span>
+                <select
+                  name="tag"
+                  defaultValue={editingPost.tag}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="ANNOUNCEMENT">Announcement</option>
+                  <option value="RESOURCES">Resources</option>
+                  <option value="EVENT">Event</option>
+                  <option value="NEWS">News</option>
+                  <option value="GENERAL">General</option>
+                </select>
+              </label>
+
+              {/* Current Image Display */}
+              {(editingPost.imageData || editingPost.imageUrl) && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-slate-700">Current Image</span>
+                  <div className="relative">
+                    <img
+                      src={editingPost.imageData || editingPost.imageUrl}
+                      alt="Current post image"
+                      className="h-32 w-full object-cover rounded-lg border border-slate-300"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      name="deleteImage"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+                    />
+                    <span className="text-red-600">Delete current image</span>
+                  </label>
+                </div>
+              )}
+
+              {/* New Image Upload */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Upload New Image (optional)</span>
+                <input
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </label>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Event Edit Popup */}
       {editingEvent && (
-        <PopupForm
-          method="PUT"
-          submitLabel="Update Event"
-          fields={[
-            { name: "title", label: "Title", dataType: "string", placeholder: "Event Title" },
-            { name: "description", label: "Description", dataType: "text", placeholder: "Describe the event" },
-            { name: "date", label: "Date", dataType: "date", placeholder: "Event Date" },
-            { name: "type", label: "Type", dataType: "select", options: [
-              { value: "Workshop", label: "Workshop" },
-              { value: "Hackathon", label: "Hackathon" },
-              { value: "Seminar", label: "Seminar" },
-              { value: "Competition", label: "Competition" },
-              { value: "Meetup", label: "Meetup" },
-              { value: "Other", label: "Other" },
-            ] },
-            { name: "imageURL", label: "Image URL", dataType: "string", placeholder: "Optional image link", optional: true },
-          ]}
-          initialValues={{
-            title: editingEvent.title,
-            description: editingEvent.description,
-            date: editingEvent.date ? new Date(editingEvent.date).toISOString().split('T')[0] : '',
-            type: editingEvent.type || '',
-            imageURL: editingEvent.imageURL || '',
-          }}
-          onClose={closeEventEditor}
-          onSubmit={async (formValues) => {
-            try {
-              const { request } = await import("../api/client.js");
-              const response = await request(`/events/${editingEvent.id}`, {
-                method: "PUT",
-                body: JSON.stringify(formValues),
-              });
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 py-6">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+            <header className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-900">Update Event</h2>
+              <button
+                type="button"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                onClick={closeEventEditor}
+                aria-label="Close popup form"
+              >
+                ✕
+              </button>
+            </header>
+
+            <form className="space-y-4" onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
               
-              // Update the event in the list with the response data
-              const updatedEvent = response?.data || response;
-              setEvents(prevEvents => 
-                prevEvents.map(event => 
-                  event.id === editingEvent.id 
-                    ? { 
-                        ...event, 
-                        ...formValues,
-                        ...updatedEvent,
-                        id: updatedEvent._id || updatedEvent.id || event.id
-                      } 
-                    : event
-                )
-              );
-              
-              closeEventEditor();
-            } catch (error) {
-              console.error("Failed to update event:", error);
-              throw error; // Re-throw to show error in PopupForm
-            }
-          }}
-        />
+              try {
+                const deleteImage = formData.get('deleteImage') === 'on';
+                const newImageFile = formData.get('image');
+                const hasNewFile = newImageFile && newImageFile.size > 0;
+
+                console.log('[Edit Event] Delete image checked:', deleteImage);
+                console.log('[Edit Event] Has new file:', hasNewFile);
+
+                let response;
+                
+                if (hasNewFile) {
+                  // New image upload takes priority
+                  const submitFormData = new FormData();
+                  
+                  // Add form fields
+                  submitFormData.append('title', formData.get('title'));
+                  submitFormData.append('description', formData.get('description'));
+                  submitFormData.append('date', formData.get('date'));
+                  submitFormData.append('type', formData.get('type'));
+                  submitFormData.append('image', newImageFile);
+                  
+                  const token = localStorage.getItem("token");
+                  const headers = {};
+                  if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                  }
+                  
+                  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1"}/events/${editingEvent.id}`, {
+                    method: "PUT",
+                    headers,
+                    body: submitFormData,
+                  });
+                  
+                  if (!res.ok) {
+                    throw new Error(`Request failed with status ${res.status}`);
+                  }
+                  
+                  response = await res.json();
+                } else if (deleteImage) {
+                  // Delete image without uploading new one
+                  const submitFormData = new FormData();
+                  
+                  // Add form fields
+                  submitFormData.append('title', formData.get('title'));
+                  submitFormData.append('description', formData.get('description'));
+                  submitFormData.append('date', formData.get('date'));
+                  submitFormData.append('type', formData.get('type'));
+                  submitFormData.append('deleteImage', 'true');
+                  
+                  console.log('[Edit Event] Sending delete image request');
+                  
+                  const token = localStorage.getItem("token");
+                  const headers = {};
+                  if (token) {
+                    headers.Authorization = `Bearer ${token}`;
+                  }
+                  
+                  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1"}/events/${editingEvent.id}`, {
+                    method: "PUT",
+                    headers,
+                    body: submitFormData,
+                  });
+                  
+                  if (!res.ok) {
+                    throw new Error(`Request failed with status ${res.status}`);
+                  }
+                  
+                  response = await res.json();
+                } else {
+                  // Use regular JSON for non-file updates
+                  const { request } = await import("../api/client.js");
+                  const updateData = {
+                    title: formData.get('title'),
+                    description: formData.get('description'),
+                    date: formData.get('date'),
+                    type: formData.get('type'),
+                  };
+                  
+                  response = await request(`/events/${editingEvent.id}`, {
+                    method: "PUT",
+                    body: JSON.stringify(updateData),
+                  });
+                }
+                
+                console.log('[Edit Event] Response:', response);
+                
+                // Update the event in the list
+                const updatedEvent = response?.data || response;
+                console.log('[Edit Event] Updated event from backend:', updatedEvent);
+                console.log('[Edit Event] Updated imageData:', updatedEvent.imageData);
+                
+                setEvents(prevEvents => {
+                  const newEvents = prevEvents.map(event => 
+                    event.id === editingEvent.id 
+                      ? { 
+                          ...event, 
+                          ...updatedEvent,
+                          id: updatedEvent._id || updatedEvent.id || event.id
+                        } 
+                      : event
+                  );
+                  console.log('[Edit Event] Updated events array:', newEvents);
+                  return newEvents;
+                });
+                
+                closeEventEditor();
+              } catch (error) {
+                console.error("Failed to update event:", error);
+                alert("Failed to update event. Please try again.");
+              }
+            }}>
+              {/* Title Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Title</span>
+                <input
+                  name="title"
+                  type="text"
+                  defaultValue={editingEvent.title}
+                  required
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                />
+              </label>
+
+              {/* Description Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Description</span>
+                <textarea
+                  name="description"
+                  defaultValue={editingEvent.description}
+                  rows={3}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 resize-vertical"
+                />
+              </label>
+
+              {/* Date Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Date</span>
+                <input
+                  name="date"
+                  type="date"
+                  defaultValue={editingEvent.date ? new Date(editingEvent.date).toISOString().split('T')[0] : ''}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                />
+              </label>
+
+              {/* Type Field */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Type</span>
+                <select
+                  name="type"
+                  defaultValue={editingEvent.type || ''}
+                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="Workshop">Workshop</option>
+                  <option value="Hackathon">Hackathon</option>
+                  <option value="Seminar">Seminar</option>
+                  <option value="Competition">Competition</option>
+                  <option value="Meetup">Meetup</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              {/* Current Image Display */}
+              {(editingEvent.imageData || editingEvent.imageURL) && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-medium text-slate-700">Current Image</span>
+                  <div className="relative">
+                    <img
+                      src={editingEvent.imageData || editingEvent.imageURL}
+                      alt="Current event image"
+                      className="h-32 w-full object-cover rounded-lg border border-slate-300"
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      name="deleteImage"
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+                    />
+                    <span className="text-red-600">Delete current image</span>
+                  </label>
+                </div>
+              )}
+
+              {/* New Image Upload */}
+              <label className="flex flex-col gap-2 text-sm font-medium text-slate-700">
+                <span>Upload New Image (optional)</span>
+                <input
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+              </label>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Update Event
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Event Registrations Popup */}

@@ -41,7 +41,15 @@ export default function EventCard({ event }) {
   };
   return (
     <article className="rounded-xl bg-white p-4 sm:p-5 shadow-md ring-1 ring-white/60">
-      <div className="h-24 sm:h-28 mb-3 sm:mb-4 rounded-md bg-linear-to-r from-sky-200 to-indigo-100" />
+      {event.imageData || event.imageURL ? (
+        <img
+          src={event.imageData || event.imageURL}
+          alt={event.title}
+          className="h-24 sm:h-28 mb-3 sm:mb-4 rounded-md w-full object-cover"
+        />
+      ) : (
+        <div className="h-24 sm:h-28 mb-3 sm:mb-4 rounded-md bg-linear-to-r from-sky-200 to-indigo-100" />
+      )}
 
       <div className="mb-3">
         <span className="inline-block text-xs font-semibold px-2 py-1 rounded-full bg-blue-50 text-blue-700">

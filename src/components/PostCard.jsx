@@ -106,9 +106,9 @@ function PostCard({ post, onEdit, onDelete, type = "student" }) {
           2. Added 'bg-slate-200' to the container to make the empty space visible.
         */}
         <div className="w-full rounded-lg overflow-hidden bg-slate-200 aspect-video mb-4 flex items-center justify-center text-gray-400">
-          {post.imageUrl ? (
+          {post.imageData || post.imageUrl ? (
             <img
-              src={post.imageUrl}
+              src={post.imageData || post.imageUrl}
               alt={post.title}
               className="w-full h-full object-contain" // Key change: object-contain
             />

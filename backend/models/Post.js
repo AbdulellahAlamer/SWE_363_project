@@ -15,6 +15,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    imageData: {
+      type: String, // Base64 encoded image data
+      default: "",
+    },
     club: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Club",

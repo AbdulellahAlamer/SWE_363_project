@@ -43,6 +43,7 @@ export const normalizePost = (post = {}) => {
     title: post.title || "Untitled Post",
     body: post.description || post.body || "",
     imageUrl: post.imageURL || post.imageUrl || "",
+    imageData: post.imageData || "", // Add imageData field
     tag: post.tag || DEFAULT_TAG,
     likes: Number.isFinite(likesCount) ? likesCount : 0,
     clubId: isClubObject ? rawClub._id : rawClub,

@@ -12,6 +12,7 @@ const INPUT_TYPE_MAP = {
   date: "date",
   "date-time": "datetime-local",
   boolean: "checkbox",
+  file: "file",
 };
 
 const DEFAULT_VALUE_BY_TYPE = {
@@ -25,6 +26,7 @@ const DEFAULT_VALUE_BY_TYPE = {
   date: "",
   "date-time": "",
   boolean: false,
+  file: null,
 };
 
 const normalizeField = (field) => {
@@ -88,20 +90,44 @@ function PopupForm({
     buildInitialValues(normalizedFields, initialValues)
   );
   const [status, setStatus] = useState({ state: "idle" });
+  const [filePreview, setFilePreview] = useState({});
 
   useEffect(() => {
     setFormValues(buildInitialValues(normalizedFields, initialValues));
     setStatus({ state: "idle" });
+    setFilePreview({});
   }, [normalizedFields, initialValues]);
 
   const handleChange = (field, event) => {
     const type = field.dataType.toLowerCase();
     let value = event.target.value;
+    
     if (type === "boolean") {
       value = event.target.checked;
     } else if (type === "number" || type === "integer" || type === "float") {
       value = event.target.value === "" ? "" : Number(event.target.value);
+    } else if (type === "file") {
+      const file = event.target.files[0];
+      value = file;
+      
+      // Create preview for image files
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreview(prev => ({
+            ...prev,
+            [field.name]: reader.result
+          }));
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFilePreview(prev => ({
+          ...prev,
+          [field.name]: null
+        }));
+      }
     }
+    
     setFormValues((prev) => ({ ...prev, [field.name]: value }));
   };
 
@@ -126,11 +152,36 @@ function PopupForm({
           ? endpoint
           : `${API_BASE_URL}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
 
+      // Check if we have file uploads
+      const hasFiles = Object.values(formValues).some(value => value instanceof File);
+      
+      let body;
+      let headers = {};
+      
+      if (hasFiles) {
+        // Use FormData for file uploads
+        const formData = new FormData();
+        Object.entries(formValues).forEach(([key, value]) => {
+          if (value instanceof File) {
+            formData.append('image', value); // Backend expects 'image' field name
+          } else if (value !== null && value !== undefined && value !== '') {
+            formData.append(key, value);
+          }
+        });
+        body = formData;
+        // Don't set Content-Type header for FormData, let browser handle it
+      } else {
+        // Use JSON for regular data
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(formValues);
+      }
+
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formValues),
+        headers,
+        body,
       });
+      
       if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
       }
@@ -230,6 +281,32 @@ function PopupForm({
                     className="rounded-lg border border-slate-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100 resize-vertical"
                   />
                 </label>
+              );
+            }
+
+            if (inputType === "file") {
+              return (
+                <div key={field.name} className="flex flex-col gap-2">
+                  <label className="text-sm font-medium text-slate-700">
+                    <span>{field.label}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => handleChange(field, event)}
+                      required={field.required}
+                      className="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </label>
+                  {filePreview[field.name] && (
+                    <div className="mt-2">
+                      <img
+                        src={filePreview[field.name]}
+                        alt="Preview"
+                        className="h-32 w-32 object-cover rounded-lg border border-slate-300"
+                      />
+                    </div>
+                  )}
+                </div>
               );
             }
 
