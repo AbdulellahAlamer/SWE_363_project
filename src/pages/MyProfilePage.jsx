@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import NavigationBar from "../components/NavigationBar.jsx";
-import { certificates as fallbackCertificates } from "../assets/data.js";
 import { fetchMyClubs } from "../api/clubs";
 import { fetchCurrentUser, updateCurrentUser } from "../api/users";
 import { getStoredSession } from "../api/auth";
@@ -119,30 +118,56 @@ export default function ProfilePage() {
     setShowEditModal(false);
   };
 
-  const handleViewCertificate = (cert) => {
-    const url =
-      cert?.imageUrl ||
-      cert?.URL ||
-      cert?.url ||
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsfYYckqdKARgMY6TUhcOnl8Fy5IuPIrj8qQ&s";
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
   const handleDownloadCertificate = (cert) => {
+    const escapeXml = (value) =>
+      (value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+    const recipient = cert.attendeeName || "Student";
+    const title = escapeXml(cert.title || "Event");
+    const issuer = escapeXml(cert.issuer || "Event Host");
+    const date = escapeXml(cert.date || "");
+    const message = escapeXml(cert.message || "");
+    const escapedRecipient = escapeXml(recipient);
+
+    const width = 900;
+    const height = 600;
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#e0f2fe;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#bfdbfe;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="${width}" height="${height}" fill="url(#grad)" rx="24" ry="24" />
+        <rect x="32" y="32" width="${width - 64}" height="${height - 64}" fill="white" rx="18" ry="18" stroke="#1d4ed8" stroke-width="3"/>
+        <text x="50%" y="120" font-family="Georgia, serif" font-size="42" font-weight="700" fill="#1f2937" text-anchor="middle">Certificate of Attendance</text>
+        <text x="50%" y="190" font-family="Inter, Arial, sans-serif" font-size="18" fill="#374151" text-anchor="middle">This certification has been awarded to</text>
+        <text x="50%" y="245" font-family="Georgia, serif" font-size="32" font-weight="700" fill="#1d4ed8" text-anchor="middle">${escapedRecipient}</text>
+        <text x="50%" y="300" font-family="Inter, Arial, sans-serif" font-size="18" fill="#374151" text-anchor="middle">for attending</text>
+        <text x="50%" y="350" font-family="Georgia, serif" font-size="30" font-weight="700" fill="#111827" text-anchor="middle">${title}</text>
+        <text x="50%" y="400" font-family="Inter, Arial, sans-serif" font-size="18" fill="#374151" text-anchor="middle">Issued by ${issuer}</text>
+        <text x="50%" y="445" font-family="Inter, Arial, sans-serif" font-size="16" fill="#6b7280" text-anchor="middle">${date}</text>
+        <line x1="200" y1="${height - 130}" x2="${width - 200}" y2="${height - 130}" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round"/>
+        <text x="${width / 2}" y="${height - 90}" font-family="Inter, Arial, sans-serif" font-size="14" fill="#6b7280" text-anchor="middle">${message}</text>
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.href = cert.imageUrl || cert.URL || cert.url;
-    link.download = `${cert.title.replace(/\s+/g, "_")}_${cert.year}.svg`;
+    const safeTitle = cert.title?.replace(/\s+/g, "_") || "certificate";
+    link.href = url;
+    link.download = `${safeTitle}.svg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
-
-  const handleDownloadAll = () => {
-    effectiveCertificates.forEach((cert, index) => {
-      setTimeout(() => {
-        handleDownloadCertificate(cert);
-      }, index * 500);
-    });
+    URL.revokeObjectURL(url);
   };
 
   const formatDate = (dateString) => {
@@ -170,19 +195,32 @@ export default function ProfilePage() {
     return [];
   }, [attendedEvents]);
 
-  const userCertificates = useMemo(
-    () =>
-      profileData?.certificates ||
-      profileData?.raw?.certificates ||
-      profileData?.raw?.Certificates ||
-      [],
-    [profileData]
-  );
-
-  const effectiveCertificates =
-    userCertificates.length > 0 ? userCertificates : fallbackCertificates;
-
   const effectiveEvents = userEvents.length > 0 ? userEvents : [];
+
+  const eventCertificates = useMemo(
+    () =>
+      effectiveEvents.map((event) => {
+        const attendeeName =
+          profileData?.name || profileData?.raw?.name || "Student";
+        const eventTitle = event.title || "Event";
+        const issuer =
+          event.club?.name ||
+          event.club ||
+          event.hostName ||
+          event.host ||
+          "Event Host";
+
+        return {
+          id: event.id || event._id || eventTitle,
+          title: eventTitle,
+          issuer,
+          date: formatDate(event.date),
+          attendeeName,
+          message: `This certification has been awarded to ${attendeeName} for attending ${eventTitle}.`,
+        };
+      }),
+    [effectiveEvents, profileData]
+  );
 
   if (loading) {
     return (
@@ -367,47 +405,39 @@ export default function ProfilePage() {
             <h2 className="text-lg sm:text-xl font-bold text-slate-900">
               Certificates
             </h2>
-            <button
-              onClick={handleDownloadAll}
-              className="text-xs sm:text-sm text-blue-600 font-medium hover:underline"
-            >
-              Download All
-            </button>
+            <span className="text-xs sm:text-sm text-blue-600 font-medium">
+              {eventCertificates.length}{" "}
+              {eventCertificates.length === 1 ? "certificate" : "certificates"}
+            </span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {effectiveCertificates.length === 0 ? (
+            {eventCertificates.length === 0 ? (
               <p className="text-slate-500 text-sm col-span-full text-center py-6">
-                No certificates yet.
+                Attend an event to receive your first certificate.
               </p>
             ) : (
-              effectiveCertificates.map((cert, idx) => (
-              <div
-                key={cert.id || idx}
-                className="rounded-xl bg-white p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow"
-              >
-                <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-2">
-                  {cert.title}
-                </h3>
-                <p className="text-xs text-slate-500 mb-3 sm:mb-4">
-                  Issued by {cert.issuer || cert.issuedBy || "Unknown"} -{" "}
-                  {cert.date || cert.year || ""}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleViewCertificate(cert)}
-                    className="flex-1 bg-white text-blue-600 border border-blue-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-50 transition-colors"
-                  >
-                    View
-                  </button>
+              eventCertificates.map((cert) => (
+                <div
+                  key={cert.id}
+                  className="rounded-xl bg-white p-4 sm:p-6 shadow-md hover:shadow-lg transition-shadow"
+                >
+                  <h3 className="font-semibold text-sm sm:text-base text-slate-900 mb-2">
+                    {cert.title}
+                  </h3>
+                  <p className="text-xs text-slate-500 mb-3 sm:mb-4">
+                    Issued by {cert.issuer} - {cert.date}
+                  </p>
+                  <div className="text-xs sm:text-sm text-slate-700 leading-relaxed">
+                    {cert.message}
+                  </div>
                   <button
                     onClick={() => handleDownloadCertificate(cert)}
-                    className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
+                    className="mt-4 w-full bg-blue-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors"
                   >
-                    Download
+                    Download Certificate
                   </button>
                 </div>
-              </div>
               ))
             )}
           </div>
