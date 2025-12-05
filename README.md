@@ -32,3 +32,21 @@ Front-end prototype for the KFUPM Clubs Hub where admins, presidents, and studen
 - `PostCard.jsx` – visual card for news posts including author and date.
 
 Use `npm install` then `npm run dev` to start the Vite dev server.
+
+## Backend setup (Express/Mongo)
+
+From `backend/`:
+
+1. Install deps: `npm install`
+2. Create `config.env` (or `.env`) with at least:
+
+```
+PORT=5000
+HOST=localhost
+API_PREFIX=/api/v1
+DATABASE=mongodb://localhost:27017/kfupm-clubs
+JWT_SECRET=dev-secret-change-me
+```
+
+3. Run dev server: `npm run dev` (nodemon) or `npm start` (plain node).
+4. Backend will listen on `http://localhost:5000/api/v1` (match your frontend `VITE_API_BASE_URL`).

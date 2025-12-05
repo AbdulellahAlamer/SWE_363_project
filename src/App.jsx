@@ -130,7 +130,7 @@ function App() {
                   discover opportunities tailored for you.
                 </p>
                 <p>admin@gmail.com password: 12345678</p>
-                <p>clubPresident@gmail.com password: 12345678</p>
+                <p>csp@kfupm.edu.sa password: 12345678</p>
                 <p>student@gmail.com password: 12345678</p>
               </div>
             )}
