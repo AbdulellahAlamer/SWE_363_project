@@ -6,7 +6,7 @@ Front-end prototype for the KFUPM Clubs Hub where admins, presidents, and studen
 
 - `LoginPage.jsx` – role-based login form with “forgot password” modal trigger.
 - `RegisterPage.jsx` – captures student details to create a new account.
-- `ResetPassword.jsx` – consumes `?user_id=` links to post new passwords to the API.
+- `ResetPassword.jsx` – consumes `?user_id=` links to post new passwords to the API
 - `ClubsPage.jsx` – searchable, filterable catalog of clubs that support join/view actions.
 - `ClubProfile.jsx` – detailed view of a single club with subscribe/share controls and upcoming events.
 - `MyClubsPage.jsx` – shows the student’s joined clubs plus progress summaries (see page file for logic).
